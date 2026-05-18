@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Chess Performance Analyzer — White vs Black comparison">
+  <title>White vs Black — Chess Analytics</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-layout" id="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-brand"><span class="sidebar-brand-icon">♛</span><span class="sidebar-brand-text">Chess Analytics</span></div>
+        <div class="sidebar-section">
+          <button class="sidebar-theme-toggle" id="theme-toggle" aria-label="Toggle dark/light mode">
+            <span class="theme-icon theme-icon--sun">☀️</span><span class="theme-toggle-track"><span class="theme-toggle-thumb"></span></span><span class="theme-icon theme-icon--moon">🌙</span>
+          </button>
+        </div>
+        <div class="sidebar-section sidebar-nav">
+          <span class="sidebar-label">— NAVIGATION —</span>
+          <nav class="nav-menu" id="nav-menu">
+            <a href="index.html" class="nav-item">Overview</a>
+            <a href="performance.html" class="nav-item active">White vs Black</a>
+            <a href="time-control.html" class="nav-item">Time Control</a>
+            <a href="openings.html" class="nav-item">Openings</a>
+            <a href="outcomes.html" class="nav-item">Outcomes</a>
+            <a href="game-length.html" class="nav-item">Game Length</a>
+            <a href="game-phase.html" class="nav-item">Game Phase</a>
+            <a href="insights.html" class="nav-item">Insights</a>
+            <a href="trends.html" class="nav-item">Trends</a>
+            <a href="streaks.html" class="nav-item">Streaks</a>
+            <a href="#" class="nav-item nav-item--disabled" title="Coming Soon">Day of Week</a>
+            <a href="#" class="nav-item nav-item--disabled" title="Coming Soon">Opponents</a>
+          </nav>
+        </div>
+        <div class="sidebar-section"><label class="sidebar-label" for="username-input">Your Lichess Username</label><input type="text" class="sidebar-input" id="username-input" placeholder="e.g. DrNykterstein" autocomplete="off"></div>
+        <div class="sidebar-section">
+          <span class="sidebar-label">— DATA —</span>
+          <div class="sidebar-actions">
+            <button class="btn sidebar-btn sidebar-btn--primary" id="upload-pgn-btn"><span class="sidebar-btn-icon">⬆️</span> Upload PGN</button>
+            <button class="btn sidebar-btn sidebar-btn--primary" id="lichess-fetch-btn" style="background-color: #3b82f6; border-color: #3b82f6;"><span class="sidebar-btn-icon">♞</span> Lichess Import</button>
+            <button class="btn sidebar-btn" id="export-btn"><span class="sidebar-btn-icon">💾</span> Export Data</button>
+            <button class="btn sidebar-btn" id="import-btn"><span class="sidebar-btn-icon">📂</span> Import Data</button>
+            <button class="btn sidebar-btn sidebar-btn--danger" id="clear-btn"><span class="sidebar-btn-icon">🗑️</span> Clear Data</button>
+            <input type="file" id="import-file-input" accept=".json" class="hidden">
+          </div>
+        </div>
+      </div>
+      <div class="sidebar-footer">
+        <div class="sidebar-stat"><span class="sidebar-stat-value" id="sidebar-game-count">0</span><span class="sidebar-stat-label">Games Analyzed</span></div>
+        <div class="sidebar-stat"><span class="sidebar-stat-value sidebar-stat-value--small" id="sidebar-last-updated">Never</span><span class="sidebar-stat-label">Last Updated</span></div>
+      </div>
+    </aside>
+    <header class="mobile-header" id="mobile-header">
+      <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open menu"><span class="hamburger-line"></span><span class="hamburger-line"></span><span class="hamburger-line"></span></button>
+      <span class="mobile-header-title">Chess Analytics</span>
+      <button class="mobile-theme-btn" id="mobile-theme-btn" aria-label="Toggle theme"><span class="theme-icon theme-icon--sun">☀️</span><span class="theme-icon theme-icon--moon">🌙</span></button>
+    </header>
+    <div class="sidebar-overlay hidden" id="sidebar-overlay"></div>
+
+    <main class="main-content" id="main-content">
+      <div class="page-header">
+        <h1 class="page-title">White vs Black Performance</h1>
+        <p class="page-subtitle">Color performance comparison</p>
+      </div>
+
+      <section class="empty-state" id="empty-state">
+        <div class="empty-state-content"><span class="empty-state-icon">♔</span><h2 class="empty-state-title">No Games Analyzed Yet</h2><p class="empty-state-text">Import your Lichess games to see White vs Black performance.</p><button class="btn sidebar-btn sidebar-btn--primary" id="load-demo-btn" style="margin-top:var(--sp-md)">Load Demo Data</button></div>
+      </section>
+
+      <section class="dashboard hidden" id="dashboard">
+
+        <!-- SECTION: Filters -->
+        <div class="filters-bar" id="global-filters" style="margin-bottom:var(--sp-lg)">
+          <div class="filter-group">
+            <span class="filter-label">Time Control</span>
+            <select class="filter-select" id="page-filter-tc">
+              <option value="all">All</option>
+              <option value="Bullet">Bullet</option>
+              <option value="Blitz">Blitz</option>
+              <option value="Rapid">Rapid</option>
+              <option value="Classical">Classical</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">Date Range</span>
+            <select class="filter-select" id="page-filter-date">
+              <option value="all">All Time</option>
+              <option value="7">Last 7 Days</option>
+              <option value="30">Last 30 Days</option>
+              <option value="90">Last 90 Days</option>
+              <option value="365">Last 365 Days</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="cards-grid">
+          <div class="stat-card"><span class="stat-card-label">White Win Rate</span><span class="stat-card-value" id="val-white-wr">—</span><span class="stat-card-sub" id="val-white-wr-sub"></span></div>
+          <div class="stat-card"><span class="stat-card-label">Black Win Rate</span><span class="stat-card-value" id="val-black-wr">—</span><span class="stat-card-sub" id="val-black-wr-sub"></span></div>
+          <div class="stat-card"><span class="stat-card-label">Best Color</span><span class="stat-card-value val-accent" id="val-best-color">—</span><span class="stat-card-sub" id="val-best-color-sub"></span></div>
+          <div class="stat-card"><span class="stat-card-label">Differential</span><span class="stat-card-value" id="val-color-diff">—</span><span class="stat-card-sub">Win rate gap between colors</span></div>
+        </div>
+
+        <div class="charts-row">
+          <div class="section-card">
+            <div class="section-title">Win Rate Comparison</div>
+            <div id="color-stats"></div>
+          </div>
+          <div class="section-card">
+            <div class="section-title">Result Breakdown by Color</div>
+            <div id="color-result-breakdown"></div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="section-title">Performance by Color</div>
+          <div class="table-wrapper" id="color-table"></div>
+        </div>
+
+        <div class="section-card" id="performance-section">
+          <div class="section-title">💡 Insight</div>
+          <div class="insight-box" id="insight-color"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-overlay hidden" id="pgn-modal"><div class="modal modal--lg"><div class="modal-header"><h3 class="modal-title">Upload PGN</h3><button class="modal-close" id="pgn-modal-close" aria-label="Close">&times;</button></div><div class="modal-body"><p class="modal-hint">Paste your Lichess PGN data below, or use Import from Lichess to fetch automatically.</p><textarea class="form-textarea" id="pgn-input" rows="14" placeholder="Paste your PGN text here..."></textarea><div class="processing-feedback hidden" id="processing-feedback"><span class="feedback-text" id="feedback-text">Processing...</span></div><div class="parse-warnings hidden" id="parse-warnings"><span class="warning-icon">⚠️</span><span class="warning-text" id="warning-text"></span></div></div><div class="modal-footer"><button class="btn sidebar-btn" id="pgn-modal-cancel">Cancel</button><button class="btn sidebar-btn sidebar-btn--primary" id="lichess-fetch-btn" style="background-color: #3b82f6; border-color: #3b82f6;">Import from Lichess</button><button class="btn sidebar-btn sidebar-btn--primary" id="analyze-btn">Analyze Games</button></div></div></div>
+  <div class="modal-overlay hidden" id="confirm-modal"><div class="modal"><div class="modal-header"><h3 class="modal-title" id="modal-title">Confirm</h3></div><div class="modal-body"><p class="modal-hint" id="modal-text">Are you sure?</p></div><div class="modal-footer"><button class="btn sidebar-btn" id="modal-cancel">Cancel</button><button class="btn sidebar-btn sidebar-btn--danger" id="modal-confirm">Confirm</button></div></div></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script src="js/storage.js"></script><script src="js/parser.js"></script><script src="js/extractor.js"></script><script src="js/analyzer.js"></script><script src="js/insights.js"></script><script src="js/ui.js"></script><script src="js/demo.js"></script><script src="js/app.js"></script>
+</body>
+</html>
