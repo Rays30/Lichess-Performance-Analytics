@@ -61,13 +61,15 @@
     var isStreaks = document.getElementById('val-streak-lw');
     var isTrends = document.getElementById('trend-winrate-chart');
 
-    if (isStreaks) {
-      if (typeof renderStreaksPage === 'function') renderStreaksPage();
-      return;
-    }
-    if (isTrends) {
-      if (typeof renderTrendsPage === 'function') renderTrendsPage();
-      return;
+    if (isStreaks || isTrends) {
+      // Always analyze ALL games first so currentAnalysis is populated
+      // before streaks/trends pages try to read it.
+      if (!currentAnalysis) {
+        currentAnalysis = Analyzer.analyze(allGames);
+        currentInsights = Insights.generateInsights(currentAnalysis);
+      }
+      if (isStreaks && typeof renderStreaksPage === 'function') { renderStreaksPage(); return; }
+      if (isTrends  && typeof renderTrendsPage  === 'function') { renderTrendsPage();  return; }
     }
 
     // General dashboard
@@ -114,13 +116,16 @@
       UI.showEmptyState();
       return;
     }
+    // Reset so applyFiltersAndRender always rebuilds from fresh data
+    currentAnalysis = null;
+    currentInsights = null;
     applyFiltersAndRender();
   }
 
   // FEATURE: Streaks page
   function renderStreaksPage() {
     if (!document.getElementById('val-streak-lw')) return; // Not on streaks page
-    if (!currentAnalysis || !currentAnalysis.overall || currentAnalysis.overall.totalGames < 3) {
+    if (!currentAnalysis || !currentAnalysis.overall || currentAnalysis.overall.totalGames < 1) {
       UI.showEmptyState();
       var emptyEl = document.getElementById('empty-state');
       if (emptyEl) {
@@ -188,11 +193,11 @@
   function renderTrendsPage() {
     if (!document.getElementById('trend-winrate-chart')) return; // Not on trends page
     
-    if (!currentAnalysis || !currentAnalysis.gamesByMonth || currentAnalysis.gamesByMonth.length < 2) {
+    if (!currentAnalysis || !currentAnalysis.gamesByMonth || currentAnalysis.gamesByMonth.length === 0) {
       UI.showEmptyState();
       var emptyEl = document.getElementById('empty-state');
       if (emptyEl) {
-        emptyEl.innerHTML = '<div class="empty-state-content"><span class="empty-state-icon">📈</span><h2 class="empty-state-title">Not Enough Data</h2><p class="empty-state-text">Upload at least 2 months of games to see trends.</p><button class="btn sidebar-btn sidebar-btn--primary" id="load-demo-btn" style="margin-top:var(--sp-md)">Load Demo Data</button></div>';
+        emptyEl.innerHTML = '<div class="empty-state-content"><span class="empty-state-icon">📈</span><h2 class="empty-state-title">No Games Yet</h2><p class="empty-state-text">Upload your Lichess games to see trends.</p><button class="btn sidebar-btn sidebar-btn--primary" id="load-demo-btn" style="margin-top:var(--sp-md)">Load Demo Data</button></div>';
         var db = document.getElementById('load-demo-btn');
         if (db) db.addEventListener('click', handleLoadDemo);
       }
@@ -396,6 +401,8 @@
     // Modals
     var uploadBtn = document.getElementById('upload-pgn-btn');
     if (uploadBtn) uploadBtn.addEventListener('click', UI.showPgnModal);
+    var heroUploadBtn = document.getElementById('upload-pgn-btn-hero');
+    if (heroUploadBtn) heroUploadBtn.addEventListener('click', UI.showPgnModal);
     if (UI.els.pgnCloseBtn) UI.els.pgnCloseBtn.addEventListener('click', UI.hidePgnModal);
     if (UI.els.pgnCancelBtn) UI.els.pgnCancelBtn.addEventListener('click', UI.hidePgnModal);
     if (UI.els.analyzeBtn) UI.els.analyzeBtn.addEventListener('click', handlePgnUpload);

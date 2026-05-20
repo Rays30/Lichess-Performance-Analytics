@@ -66,6 +66,21 @@ var UI = (function () {
   // FEATURE: Chart.js migration
   const chartInstances = {};
 
+  // --- Lichess brand color helpers ---
+  function lcColor(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+  var LC = {
+    win:   function(){ return lcColor('--color-win')   || '#629924'; },
+    loss:  function(){ return lcColor('--color-loss')  || '#bf4040'; },
+    draw:  function(){ return lcColor('--color-draw')  || '#c8a45a'; },
+    blue:  function(){ return lcColor('--lc-blue')     || '#4a90d9'; },
+    biscuit: function(){ return lcColor('--lc-biscuit')|| '#b58863'; },
+    gray:  function(){ return '#8a847c'; },
+  };
+
+
+
   if (typeof MutationObserver !== 'undefined') {
     new MutationObserver(function(mutations) {
       mutations.forEach(function(mutation) {
@@ -99,8 +114,8 @@ var UI = (function () {
     if (!el) return;
     
     var style = getComputedStyle(document.documentElement);
-    Chart.defaults.color = style.getPropertyValue('--text-color').trim() || '#1e293b';
-    Chart.defaults.borderColor = style.getPropertyValue('--border-color').trim() || '#e2e8f0';
+    Chart.defaults.color = style.getPropertyValue('--text-secondary').trim() || '#a09890';
+    Chart.defaults.borderColor = style.getPropertyValue('--card-border').trim() || '#302c26';
 
     var ctx = el.getContext('2d');
     chartInstances[id] = new Chart(ctx, config);
@@ -110,6 +125,19 @@ var UI = (function () {
 
   function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
+    // Sync pill toggle visual state
+    var isLight = theme === 'light';
+    [els.themeToggle, els.mobileThemeBtn].forEach(function(btn) {
+      if (!btn) return;
+      if (isLight) btn.classList.add('is-light');
+      else btn.classList.remove('is-light');
+    });
+    // Update Chart.js defaults to match new theme
+    if (typeof Chart !== 'undefined') {
+      var s = getComputedStyle(document.documentElement);
+      Chart.defaults.color = s.getPropertyValue('--text-secondary').trim() || '#a09890';
+      Chart.defaults.borderColor = s.getPropertyValue('--card-border').trim() || '#302c26';
+    }
   }
 
   // --- Views ---
@@ -122,6 +150,7 @@ var UI = (function () {
   function showDashboard() {
     if (els.emptyState) els.emptyState.classList.add('hidden');
     if (els.dashboard) els.dashboard.classList.remove('hidden');
+    skeletonizeStats();
   }
 
   // --- Modals ---
@@ -178,7 +207,25 @@ var UI = (function () {
 
   // --- Rendering ---
 
-  function txt(id, v) { var e = document.getElementById(id); if (e) e.textContent = v; }
+  function txt(id, v) {
+    var e = document.getElementById(id);
+    if (!e) return;
+    e.textContent = v;
+    // Remove skeleton state when real value arrives
+    if (v && v !== '—' && v !== '') e.removeAttribute('data-empty');
+  }
+
+  // Set all stat card values to skeleton state on load
+  function skeletonizeStats() {
+    ['val-total-games','val-winrate','val-best-tc','val-common-loss',
+     'val-white-wr','val-black-wr','val-best-color','val-color-diff',
+     'val-tc-best','val-tc-most','val-tc-vol','val-tc-timeout',
+     'val-best-opening','val-worst-opening',
+     'val-streak-wins','val-streak-losses','val-current-streak'].forEach(function(id) {
+      var e = document.getElementById(id);
+      if (e) { e.textContent = ''; e.setAttribute('data-empty', 'true'); }
+    });
+  }
 
   function renderDashboard(analysis, insightsSet) {
     if (!analysis) { showEmptyState(); return; }
@@ -363,9 +410,9 @@ var UI = (function () {
     var rates = [];
     var colors = [];
     var style = getComputedStyle(document.documentElement);
-    var wC = style.getPropertyValue('--win-color').trim() || '#22c55e';
-    var lC = style.getPropertyValue('--loss-color').trim() || '#ef4444';
-    var dC = style.getPropertyValue('--draw-color').trim() || '#f59e0b';
+    var wC = style.getPropertyValue('--color-win').trim() || '#629924';
+    var lC = style.getPropertyValue('--color-loss').trim() || '#bf4040';
+    var dC = style.getPropertyValue('--color-draw').trim() || '#c8a45a';
 
     for (var i = 0; i < activeBuckets.length; i++) {
       var b = activeBuckets[i];
@@ -467,7 +514,7 @@ var UI = (function () {
 
   function buildDonut(data, title) {
     var types = ['checkmate', 'resignation', 'timeout', 'other'];
-    var colors = { checkmate: '#ef4444', resignation: '#f59e0b', timeout: '#3b82f6', other: '#9ca3b4' };
+    var colors = { checkmate: LC.loss(), resignation: LC.draw(), timeout: LC.blue(), other: LC.gray() };
     var total = 0;
     for (var i = 0; i < types.length; i++) total += data[types[i]].count;
 
@@ -512,7 +559,7 @@ var UI = (function () {
     
     var data = out.wins;
     var types = ['checkmate', 'resignation', 'timeout', 'other'];
-    var colors = { checkmate: '#ef4444', resignation: '#f59e0b', timeout: '#3b82f6', other: '#9ca3b4' };
+    var colors = { checkmate: LC.loss(), resignation: LC.draw(), timeout: LC.blue(), other: LC.gray() };
     
     var counts = [];
     var bgColors = [];
@@ -584,7 +631,7 @@ var UI = (function () {
   function renderGamePhaseStats(gp) {
     var el = document.getElementById('gamephase-stats');
     if (!el) return;
-    var colors = {opening:'#3b82f6',middlegame:'#f59e0b',endgame:'#22c55e'};
+    var colors = {opening:LC.blue(),middlegame:LC.biscuit(),endgame:LC.win()};
     var total = gp.opening.losses + gp.middlegame.losses + gp.endgame.losses;
     if (total === 0) { el.innerHTML = '<p class="card-disclaimer">No loss data available.</p>'; return; }
     
@@ -636,9 +683,9 @@ var UI = (function () {
     el.innerHTML = '<div style="position:relative; height:250px; width:100%;"><canvas id="win-loss-donut"></canvas></div>';
     
     var style = getComputedStyle(document.documentElement);
-    var wC = style.getPropertyValue('--win-color').trim() || '#22c55e';
-    var lC = style.getPropertyValue('--loss-color').trim() || '#ef4444';
-    var dC = style.getPropertyValue('--draw-color').trim() || '#f59e0b';
+    var wC = style.getPropertyValue('--color-win').trim() || '#629924';
+    var lC = style.getPropertyValue('--color-loss').trim() || '#bf4040';
+    var dC = style.getPropertyValue('--color-draw').trim() || '#c8a45a';
     
     initChart('win-loss-donut', {
       type: 'doughnut',
@@ -717,9 +764,9 @@ var UI = (function () {
       var d = c[col]; if (d.total === 0) return;
       var wP=Math.round((d.wins/d.total)*100), lP=Math.round((d.losses/d.total)*100), dP=100-wP-lP;
       html += '<div style="margin-bottom:var(--sp-md)"><div style="font-size:var(--font-sm);font-weight:500;margin-bottom:4px">'+capitalize(col)+' ('+d.total+' games)</div>';
-      html += '<div class="stacked-bar"><div class="stacked-segment" style="width:'+wP+'%;background:#22c55e">W '+wP+'%</div>';
-      html += '<div class="stacked-segment" style="width:'+lP+'%;background:#ef4444">L '+lP+'%</div>';
-      html += '<div class="stacked-segment" style="width:'+dP+'%;background:#f59e0b">D '+dP+'%</div></div></div>';
+      html += '<div class="stacked-bar"><div class="stacked-segment" style="width:'+wP+'%;background:'+LC.win()+'">W '+wP+'%</div>';
+      html += '<div class="stacked-segment" style="width:'+lP+'%;background:'+LC.loss()+'">L '+lP+'%</div>';
+      html += '<div class="stacked-segment" style="width:'+dP+'%;background:'+LC.draw()+'">D '+dP+'%</div></div></div>';
     });
     html += '</div>'; el.innerHTML = html;
   }
@@ -745,7 +792,7 @@ var UI = (function () {
       if (tl === 0) return;
       html += '<div style="margin-bottom:var(--sp-sm)"><div style="font-size:var(--font-sm);font-weight:500;margin-bottom:4px">'+b+'</div>';
       html += '<div class="stacked-bar">';
-      var segs = [{l:'Timeout',c:'#3b82f6',v:lc.timeout},{l:'Checkmate',c:'#ef4444',v:lc.checkmate},{l:'Resign',c:'#f59e0b',v:lc.resignation},{l:'Other',c:'#94a3b8',v:lc.other}];
+      var segs = [{l:'Timeout',c:LC.blue(),v:lc.timeout},{l:'Checkmate',c:LC.loss(),v:lc.checkmate},{l:'Resign',c:LC.draw(),v:lc.resignation},{l:'Other',c:LC.gray(),v:lc.other}];
       segs.forEach(function(s){ if(s.v>0){ var p=Math.round((s.v/tl)*100); html+='<div class="stacked-segment" style="width:'+p+'%;background:'+s.c+'" title="'+s.l+': '+s.v+'">'+p+'%</div>'; }});
       html += '</div></div>';
     });
@@ -769,9 +816,9 @@ var UI = (function () {
     var el2 = document.getElementById('opening-games-chart');
     
     var style = getComputedStyle(document.documentElement);
-    var wC = style.getPropertyValue('--win-color').trim() || '#22c55e';
-    var lC = style.getPropertyValue('--loss-color').trim() || '#ef4444';
-    var dC = style.getPropertyValue('--draw-color').trim() || '#f59e0b';
+    var wC = style.getPropertyValue('--color-win').trim() || '#629924';
+    var lC = style.getPropertyValue('--color-loss').trim() || '#bf4040';
+    var dC = style.getPropertyValue('--color-draw').trim() || '#c8a45a';
     var aC = style.getPropertyValue('--color-accent').trim() || '#6366f1';
 
     if (el1) {
@@ -845,7 +892,7 @@ var UI = (function () {
     
     var data = out.losses;
     var types = ['checkmate', 'resignation', 'timeout', 'other'];
-    var colors = { checkmate: '#ef4444', resignation: '#f59e0b', timeout: '#3b82f6', other: '#9ca3b4' };
+    var colors = { checkmate: LC.loss(), resignation: LC.draw(), timeout: LC.blue(), other: LC.gray() };
     
     var counts = [];
     var bgColors = [];
@@ -1107,9 +1154,9 @@ var UI = (function () {
     // SECTION 2: Charts
     var labels = gbm.map(function(m) { return m.month; });
     var style = getComputedStyle(document.documentElement);
-    var wC = style.getPropertyValue('--win-color').trim() || '#22c55e';
-    var lC = style.getPropertyValue('--loss-color').trim() || '#ef4444';
-    var dC = style.getPropertyValue('--draw-color').trim() || '#f59e0b';
+    var wC = style.getPropertyValue('--color-win').trim() || '#629924';
+    var lC = style.getPropertyValue('--color-loss').trim() || '#bf4040';
+    var dC = style.getPropertyValue('--color-draw').trim() || '#c8a45a';
     var aC = style.getPropertyValue('--color-accent').trim() || '#6366f1';
     var wBg = 'rgba(34, 197, 94, 0.2)';
 
@@ -1136,7 +1183,7 @@ var UI = (function () {
 
     initChart('trend-games-chart', {
       type: 'line',
-      data: { labels: labels, datasets: [{ label: 'Games Played', data: gbm.map(function(m){return m.total;}), borderColor: '#f59e0b', backgroundColor: '#f59e0b', tension: 0.1 }] },
+      data: { labels: labels, datasets: [{ label: 'Games Played', data: gbm.map(function(m){return m.total;}), borderColor: LC.biscuit(), backgroundColor: LC.biscuit(), tension: 0.1 }] },
       options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
     });
 
@@ -1255,7 +1302,7 @@ var UI = (function () {
     txt('val-streak-tl-sub', 'Avg length: ' + s.totalLossStreaks.avgLength + ' games');
 
     // SECTION 3: Charts
-    var wC = '#22c55e', lC = '#ef4444';
+    var wC = LC.win(), lC = LC.loss();
 
     // Chart 1: Streaks Over Time (bar with positive/negative)
     if (s.streaksOverTime && s.streaksOverTime.length > 0) {

@@ -1,36 +1,118 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Chess Performance Analyzer — Game Length Analysis">
-  <title>Game Length — Chess Analytics</title>
+  <title>Game Length — Lichess Analytics</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div class="app-layout" id="app-layout">
-    <aside class="sidebar" id="sidebar">
+        <aside class="sidebar" id="sidebar">
       <div class="sidebar-top">
-        <div class="sidebar-brand"><span class="sidebar-brand-icon">♛</span><span class="sidebar-brand-text">Chess Analytics</span></div>
-        <div class="sidebar-section"><button class="sidebar-theme-toggle" id="theme-toggle" aria-label="Toggle dark/light mode"><span class="theme-icon theme-icon--sun">☀️</span><span class="theme-toggle-track"><span class="theme-toggle-thumb"></span></span><span class="theme-icon theme-icon--moon">🌙</span></button></div>
-        <div class="sidebar-section sidebar-nav"><span class="sidebar-label">— NAVIGATION —</span><nav class="nav-menu" id="nav-menu"><a href="index.html" class="nav-item">Overview</a><a href="performance.html" class="nav-item">White vs Black</a><a href="time-control.html" class="nav-item">Time Control</a><a href="openings.html" class="nav-item">Openings</a><a href="outcomes.html" class="nav-item">Outcomes</a><a href="game-length.html" class="nav-item active">Game Length</a><a href="game-phase.html" class="nav-item">Game Phase</a><a href="insights.html" class="nav-item">Insights</a><a href="trends.html" class="nav-item">Trends</a><a href="streaks.html" class="nav-item">Streaks</a><a href="#" class="nav-item nav-item--disabled" title="Coming Soon">Day of Week</a><a href="#" class="nav-item nav-item--disabled" title="Coming Soon">Opponents</a></nav></div>
-        <div class="sidebar-section"><label class="sidebar-label" for="username-input">Your Lichess Username</label><input type="text" class="sidebar-input" id="username-input" placeholder="e.g. DrNykterstein" autocomplete="off"></div>
-        <div class="sidebar-section"><span class="sidebar-label">— DATA —</span><div class="sidebar-actions"><button class="btn sidebar-btn sidebar-btn--primary" id="upload-pgn-btn"><span class="sidebar-btn-icon">⬆️</span> Upload PGN</button><button class="btn sidebar-btn" id="export-btn"><span class="sidebar-btn-icon">💾</span> Export Data</button><button class="btn sidebar-btn" id="import-btn"><span class="sidebar-btn-icon">📂</span> Import Data</button><button class="btn sidebar-btn sidebar-btn--danger" id="clear-btn"><span class="sidebar-btn-icon">🗑️</span> Clear Data</button><input type="file" id="import-file-input" accept=".json" class="hidden"></div></div>
+
+        <div class="sidebar-brand">
+          <div class="sidebar-brand-logo">♞</div>
+          <div class="sidebar-brand-info">
+            <span class="sidebar-brand-title">Lichess Analytics</span>
+            <span class="sidebar-brand-sub">Performance Tracker</span>
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <button class="sidebar-theme-toggle" id="theme-toggle" aria-label="Toggle dark/light mode">
+            <span class="theme-icon theme-icon--sun">☀️</span>
+            <span class="theme-toggle-track"><span class="theme-toggle-thumb"></span></span>
+            <span class="theme-icon theme-icon--moon">🌙</span>
+          </button>
+        </div>
+
+        <div class="sidebar-section sidebar-nav">
+          <span class="sidebar-label">Analysis</span>
+          <nav class="nav-menu" id="nav-menu">
+            <a href="index.html" class="nav-item"><span class="nav-icon">📊</span> Overview</a>
+            <a href="performance.html" class="nav-item"><span class="nav-icon">⚖️</span> White vs Black</a>
+            <a href="time-control.html" class="nav-item"><span class="nav-icon">⏱️</span> Time Control</a>
+            <a href="openings.html" class="nav-item"><span class="nav-icon">♟️</span> Openings</a>
+            <a href="outcomes.html" class="nav-item"><span class="nav-icon">🏁</span> Outcomes</a>
+            <a href="game-length.html" class="nav-item active"><span class="nav-icon">📏</span> Game Length</a>
+            <a href="game-phase.html" class="nav-item"><span class="nav-icon">🔀</span> Game Phase</a>
+            <a href="insights.html" class="nav-item"><span class="nav-icon">💡</span> Insights</a>
+            <a href="trends.html" class="nav-item"><span class="nav-icon">📈</span> Trends</a>
+            <a href="streaks.html" class="nav-item"><span class="nav-icon">🔥</span> Streaks</a>
+          </nav>
+          <div class="nav-separator"></div>
+          <span class="sidebar-label">Coming Soon</span>
+          <nav class="nav-menu">
+            <a href="#" class="nav-item nav-item--disabled"><span class="nav-icon">📅</span> Day of Week <span class="nav-badge">Soon</span></a>
+            <a href="#" class="nav-item nav-item--disabled"><span class="nav-icon">👥</span> Opponents <span class="nav-badge">Soon</span></a>
+          </nav>
+        </div>
+
+        <div class="sidebar-section">
+          <label class="sidebar-label" for="username-input">Lichess Username</label>
+          <input type="text" class="sidebar-input" id="username-input" placeholder="e.g. DrNykterstein" autocomplete="off">
+        </div>
+
+        <div class="sidebar-section">
+          <span class="sidebar-label">Data</span>
+          <div class="sidebar-actions">
+            <button class="btn sidebar-btn sidebar-btn--primary" id="upload-pgn-btn">
+              <span class="sidebar-btn-icon">⬆️</span> Upload PGN
+            </button>
+            <button class="btn sidebar-btn" id="export-btn">
+              <span class="sidebar-btn-icon">💾</span> Export Data
+            </button>
+            <button class="btn sidebar-btn" id="import-btn">
+              <span class="sidebar-btn-icon">📂</span> Import Data
+            </button>
+            <button class="btn sidebar-btn sidebar-btn--danger" id="clear-btn">
+              <span class="sidebar-btn-icon">🗑️</span> Clear Data
+            </button>
+            <input type="file" id="import-file-input" accept=".json" class="hidden">
+          </div>
+        </div>
+
       </div>
-      <div class="sidebar-footer"><div class="sidebar-stat"><span class="sidebar-stat-value" id="sidebar-game-count">0</span><span class="sidebar-stat-label">Games Analyzed</span></div><div class="sidebar-stat"><span class="sidebar-stat-value sidebar-stat-value--small" id="sidebar-last-updated">Never</span><span class="sidebar-stat-label">Last Updated</span></div></div>
+      <div class="sidebar-footer">
+        <div class="sidebar-stat">
+          <span class="sidebar-stat-value" id="sidebar-game-count">0</span>
+          <span class="sidebar-stat-label">Games Analyzed</span>
+        </div>
+        <div class="sidebar-stat">
+          <span class="sidebar-stat-value sidebar-stat-value--small" id="sidebar-last-updated">Never</span>
+          <span class="sidebar-stat-label">Last Updated</span>
+        </div>
+      </div>
     </aside>
-    <header class="mobile-header" id="mobile-header"><button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open menu"><span class="hamburger-line"></span><span class="hamburger-line"></span><span class="hamburger-line"></span></button><span class="mobile-header-title">Chess Analytics</span><button class="mobile-theme-btn" id="mobile-theme-btn" aria-label="Toggle theme"><span class="theme-icon theme-icon--sun">☀️</span><span class="theme-icon theme-icon--moon">🌙</span></button></header>
+
+    <header class="mobile-header" id="mobile-header">
+      <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+      <span class="mobile-header-title">♞ Lichess Analytics</span>
+      <button class="mobile-theme-btn" id="mobile-theme-btn" aria-label="Toggle theme">
+        <span class="theme-icon theme-icon--sun">☀️</span>
+        <span class="theme-icon theme-icon--moon">🌙</span>
+      </button>
+    </header>
+
     <div class="sidebar-overlay hidden" id="sidebar-overlay"></div>
 
     <main class="main-content" id="main-content">
-      <div class="page-header">
-        <h1 class="page-title">Game Length Analysis</h1>
-        <p class="page-subtitle">How long your games last — wins vs losses</p>
+            <div class="page-header">
+        <div>
+          <h1 class="page-title">Game Length Analysis</h1>
+          <p class="page-subtitle">How long your games last — wins vs losses</p>
+        </div>
       </div>
 
-      <section class="empty-state" id="empty-state">
+<section class="empty-state" id="empty-state">
         <div class="empty-state-content"><span class="empty-state-icon">♔</span><h2 class="empty-state-title">No Games Analyzed Yet</h2><p class="empty-state-text">Import your Lichess games to see Game Length analysis.</p><button class="btn sidebar-btn sidebar-btn--primary" id="load-demo-btn" style="margin-top:var(--sp-md)">Load Demo Data</button></div>
       </section>
 
