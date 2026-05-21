@@ -137,15 +137,16 @@
     <div class="sidebar-overlay hidden" id="sidebar-overlay"></div>
 
     <main class="main-content" id="main-content">
-            <div class="page-header">
+      <div class="page-header">
         <div>
           <h1 class="page-title">Trends</h1>
           <p class="page-subtitle">Track your performance over time</p>
         </div>
       </div>
 
-      <div class="filter-bar">
-          <label for="page-filter-date" style="font-size:var(--font-sm); color:var(--text-muted)">Date Range</label>
+      <div class="filters-bar" style="justify-content:flex-end">
+        <div class="filter-group">
+          <span class="filter-label">Date Range</span>
           <select id="page-filter-date" class="filter-select">
             <option value="30">Last 30 days</option>
             <option value="90">Last 90 days</option>
@@ -157,11 +158,12 @@
       </div>
 
       <section class="empty-state" id="empty-state">
-        <div class="empty-state-content">
-          <span class="empty-state-icon">📈</span>
-          <h2 class="empty-state-title">Not Enough Data</h2>
-          <p class="empty-state-text">Upload at least 2 months of games to see trends.</p>
-          <button class="btn sidebar-btn sidebar-btn--primary" id="load-demo-btn" style="margin-top:var(--sp-md)">Load Demo Data</button>
+        <span class="empty-state-icon">📈</span>
+        <h2 class="empty-state-title">No Games Analyzed Yet</h2>
+        <p class="empty-state-text">Import your Lichess games to track your rating and performance over time.</p>
+        <div class="empty-state-actions">
+          <button class="btn-hero btn-hero--primary" id="upload-pgn-btn-hero">⬆️ Upload PGN</button>
+          <button class="btn-hero btn-hero--secondary" id="load-demo-btn">▶ Try Demo Data</button>
         </div>
       </section>
 

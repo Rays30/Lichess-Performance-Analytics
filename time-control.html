@@ -113,7 +113,13 @@
       </div>
 
 <section class="empty-state" id="empty-state">
-        <div class="empty-state-content"><span class="empty-state-icon">♔</span><h2 class="empty-state-title">No Games Analyzed Yet</h2><p class="empty-state-text">Import your Lichess games to see Time Control performance.</p><button class="btn sidebar-btn sidebar-btn--primary" id="load-demo-btn" style="margin-top:var(--sp-md)">Load Demo Data</button></div>
+        <span class="empty-state-icon">⏱️</span>
+        <h2 class="empty-state-title">No Games Analyzed Yet</h2>
+        <p class="empty-state-text">Import your Lichess games to see how you perform across different time formats.</p>
+        <div class="empty-state-actions">
+          <button class="btn-hero btn-hero--primary" id="upload-pgn-btn-hero">⬆️ Upload PGN</button>
+          <button class="btn-hero btn-hero--secondary" id="load-demo-btn">▶ Try Demo Data</button>
+        </div>
       </section>
 
       <section class="dashboard hidden" id="dashboard">

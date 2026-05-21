@@ -105,7 +105,7 @@
     <div class="sidebar-overlay hidden" id="sidebar-overlay"></div>
 
     <main class="main-content" id="main-content">
-            <div class="page-header">
+      <div class="page-header">
         <div>
           <h1 class="page-title">Streaks Analysis</h1>
           <p class="page-subtitle">Analyze your winning and losing streak patterns</p>
@@ -113,7 +113,13 @@
       </div>
 
 <section class="empty-state" id="empty-state">
-        <div class="empty-state-content"><span class="empty-state-icon">🔥</span><h2 class="empty-state-title">No Games Analyzed Yet</h2><p class="empty-state-text">Import your Lichess games to analyze your streaks.</p><button class="btn sidebar-btn sidebar-btn--primary" id="load-demo-btn" style="margin-top:var(--sp-md)">Load Demo Data</button></div>
+        <span class="empty-state-icon">🔥</span>
+        <h2 class="empty-state-title">No Games Analyzed Yet</h2>
+        <p class="empty-state-text">Import your Lichess games to analyse your winning and losing streak patterns.</p>
+        <div class="empty-state-actions">
+          <button class="btn-hero btn-hero--primary" id="upload-pgn-btn-hero">⬆️ Upload PGN</button>
+          <button class="btn-hero btn-hero--secondary" id="load-demo-btn">▶ Try Demo Data</button>
+        </div>
       </section>
 
       <section class="dashboard hidden" id="dashboard">

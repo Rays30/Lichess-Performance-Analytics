@@ -403,3 +403,17 @@ input,textarea,select{font-family:inherit}
 .is-light .theme-icon--moon { opacity: 1; }
 /* Active thumb glow */
 .is-light .theme-toggle-track { background: var(--lc-biscuit); box-shadow: 0 0 0 2px rgba(181,136,99,0.2); }
+
+/* === Chart containers — must have explicit height for Chart.js === */
+.chart-container {
+  position: relative;
+  height: 260px;
+  width: 100%;
+}
+.chart-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+/* Wider charts */
+.chart-container--tall { height: 320px; }
+.chart-container--short { height: 180px; }
