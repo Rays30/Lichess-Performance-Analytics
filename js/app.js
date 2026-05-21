@@ -27,6 +27,9 @@
     var count = Storage.getGameCount();
     UI.updateSidebarStats(count, Storage.getLastUpdated());
 
+    // Restore persisted filters before first render
+    restoreFilters();
+
     if (count === 0) {
       UI.showEmptyState();
     } else {
@@ -42,6 +45,80 @@
   var currentAnalysis = null;
   var currentInsights = null;
 
+  // --- Filter Persistence ---
+  var FILTER_KEY = 'lca_filters';
+
+  function saveFilters() {
+    var state = {
+      tc:    (document.getElementById('page-filter-tc')    || {}).value || 'all',
+      date:  (document.getElementById('page-filter-date')  || {}).value || 'all',
+      color: (document.getElementById('page-filter-color') || {}).value || 'all'
+    };
+    try { localStorage.setItem(FILTER_KEY, JSON.stringify(state)); } catch(e) {}
+  }
+
+  function restoreFilters() {
+    var raw;
+    try { raw = localStorage.getItem(FILTER_KEY); } catch(e) {}
+    if (!raw) return;
+    var state;
+    try { state = JSON.parse(raw); } catch(e) { return; }
+    ['tc','date','color'].forEach(function(k) {
+      var el = document.getElementById('page-filter-' + k);
+      if (el && state[k]) el.value = state[k];
+    });
+  }
+
+  function clearFilters() {
+    try { localStorage.removeItem(FILTER_KEY); } catch(e) {}
+    ['page-filter-tc','page-filter-date','page-filter-color'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.value = 'all';
+    });
+  }
+
+  function renderActiveFilterChips() {
+    var bar = document.getElementById('active-filter-bar');
+    if (!bar) return;
+    var tc    = (document.getElementById('page-filter-tc')    || {}).value || 'all';
+    var date  = (document.getElementById('page-filter-date')  || {}).value || 'all';
+    var color = (document.getElementById('page-filter-color') || {}).value || 'all';
+
+    var dateLabels = {'7':'Last 7 days','30':'Last 30 days','90':'Last 90 days','365':'Last year'};
+    var chips = [];
+    if (tc    !== 'all') chips.push({ label: tc,                 key: 'tc'    });
+    if (date  !== 'all') chips.push({ label: dateLabels[date] || date + 'd', key: 'date'  });
+    if (color !== 'all') chips.push({ label: color.charAt(0).toUpperCase() + color.slice(1), key: 'color' });
+
+    if (chips.length === 0) {
+      bar.classList.add('hidden');
+      return;
+    }
+    bar.classList.remove('hidden');
+    var html = '<span class="afb-label">Active filters:</span>';
+    chips.forEach(function(c) {
+      html += '<span class="afb-chip">' + c.label +
+              ' <button class="afb-chip-x" data-key="' + c.key + '" aria-label="Remove filter">&times;</button></span>';
+    });
+    html += '<button class="afb-clear" id="afb-clear-all">Clear all</button>';
+    bar.innerHTML = html;
+
+    // Bind chip remove buttons
+    bar.querySelectorAll('.afb-chip-x').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var el = document.getElementById('page-filter-' + btn.dataset.key);
+        if (el) { el.value = 'all'; saveFilters(); applyFiltersAndRender(); }
+      });
+    });
+    var clearAll = document.getElementById('afb-clear-all');
+    if (clearAll) {
+      clearAll.addEventListener('click', function() {
+        clearFilters();
+        applyFiltersAndRender();
+      });
+    }
+  }
+
   function applyFiltersAndRender() {
     var allGames = Storage.loadGames();
     if (!allGames || allGames.length === 0) {
@@ -49,14 +126,20 @@
       return;
     }
 
-    // Bind filters once
+    // Bind filters once — persist on change
     ['page-filter-tc', 'page-filter-date', 'page-filter-color'].forEach(function(id) {
       var el = document.getElementById(id);
       if (el && !el.dataset.bound) {
-        el.addEventListener('change', applyFiltersAndRender);
+        el.addEventListener('change', function() {
+          saveFilters();
+          applyFiltersAndRender();
+        });
         el.dataset.bound = 'true';
       }
     });
+
+    // Show active filter chips after binding
+    renderActiveFilterChips();
 
     var isStreaks = document.getElementById('val-streak-lw');
     var isTrends = document.getElementById('trend-winrate-chart');
@@ -105,10 +188,82 @@
       }
     } else {
       UI.showDashboard();
+      renderActiveFilterChips();
       currentAnalysis = Analyzer.analyze(filtered);
       currentInsights = Insights.generateInsights(currentAnalysis);
       UI.renderDashboard(currentAnalysis, currentInsights);
     }
+  }
+
+
+  // --- Post-import Welcome Banner ---
+  var BANNER_KEY = 'lca_welcome_shown';
+  var IMPORT_COUNT_KEY = 'lca_import_count';
+
+  function showWelcomeBanner(gameCount) {
+    var banner = document.getElementById('welcome-banner');
+    if (!banner) return;
+    // Only show on index/overview page
+    if (!document.getElementById('val-total-games')) return;
+
+    banner.innerHTML =
+      '<div class="wb-inner">' +
+        '<span class="wb-icon">✅</span>' +
+        '<div class="wb-body">' +
+          '<strong class="wb-title">' + gameCount + ' games imported!</strong>' +
+          '<span class="wb-text">Games loaded! Explore by ' +
+            '<a href="openings.html" class="wb-link">Openings</a>, ' +
+            '<a href="trends.html" class="wb-link">Trends</a>, or ' +
+            '<a href="performance.html" class="wb-link">White vs Black</a> next.' +
+          '</span>' +
+        '</div>' +
+        '<button class="wb-close" id="wb-close" aria-label="Dismiss">&times;</button>' +
+      '</div>';
+    banner.classList.remove('hidden');
+
+    var closeBtn = document.getElementById('wb-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() {
+        banner.classList.add('hidden');
+        try { sessionStorage.setItem(BANNER_KEY, '1'); } catch(e) {}
+      });
+    }
+
+    // Auto-hide after 12s
+    setTimeout(function() { banner.classList.add('hidden'); }, 12000);
+  }
+
+  function maybeShowBanner(newGamesCount) {
+    // Don't show if already dismissed this session
+    try { if (sessionStorage.getItem(BANNER_KEY)) return; } catch(e) {}
+    if (newGamesCount > 0) showWelcomeBanner(newGamesCount);
+  }
+
+  // --- Suggested Next Page (bottom of each page) ---
+  var PAGE_SUGGESTIONS = {
+    'index.html':        { label: 'Explore your openings →', href: 'openings.html' },
+    'openings.html':     { label: 'See performance by color →', href: 'performance.html' },
+    'performance.html':  { label: 'Check your time control trends →', href: 'time-control.html' },
+    'time-control.html': { label: 'Analyse game outcomes →', href: 'outcomes.html' },
+    'outcomes.html':     { label: 'Explore game length patterns →', href: 'game-length.html' },
+    'game-length.html':  { label: 'Dive into game phases →', href: 'game-phase.html' },
+    'game-phase.html':   { label: 'Read your insights →', href: 'insights.html' },
+    'insights.html':     { label: 'Track your trends →', href: 'trends.html' },
+    'trends.html':       { label: 'Analyse your streaks →', href: 'streaks.html' },
+    'streaks.html':      { label: 'Back to overview →', href: 'index.html' },
+  };
+
+  function renderNextPageSuggestion() {
+    var el = document.getElementById('next-page-suggestion');
+    if (!el) return;
+    var page = window.location.pathname.split('/').pop() || 'index.html';
+    var suggestion = PAGE_SUGGESTIONS[page];
+    if (!suggestion) return;
+    el.innerHTML =
+      '<a href="' + suggestion.href + '" class="next-page-link">' +
+        suggestion.label +
+      '</a>';
+    el.classList.remove('hidden');
   }
 
   function processAndRender(gameDataArray) {
@@ -120,6 +275,7 @@
     currentAnalysis = null;
     currentInsights = null;
     applyFiltersAndRender();
+    renderNextPageSuggestion();
   }
 
   // FEATURE: Streaks page
@@ -275,6 +431,8 @@
       // Close modal and render full dataset
       UI.hidePgnModal();
       processAndRender(Storage.loadGames());
+      maybeShowBanner(extractResult.games.length);
+      renderNextPageSuggestion();
       
       // We show an alert instead of modal warning since modal closes on success
       if (parseResult.duplicateCount > 0 || parseResult.invalidCount > 0) {
@@ -335,6 +493,8 @@
       UI.updateSidebarStats(Storage.getGameCount(), Storage.getLastUpdated());
       UI.hidePgnModal();
       processAndRender(Storage.loadGames());
+      maybeShowBanner(extractResult.games.length);
+      renderNextPageSuggestion();
 
       var msg = 'Imported ' + extractResult.games.length + ' games from Lichess.';
       if (parseResult.duplicateCount > 0 || parseResult.invalidCount > 0) {

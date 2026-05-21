@@ -117,6 +117,10 @@
 
     <!-- ── MAIN ── -->
     <main class="main-content" id="main-content">
+    <!-- Welcome banner (shown after import) -->
+    <div class="welcome-banner hidden" id="welcome-banner"></div>
+
+
       <div class="page-header">
         <div>
           <h1 class="page-title">Overview</h1>
@@ -124,22 +128,177 @@
         </div>
       </div>
 
-      <!-- Empty state -->
-      <section class="empty-state" id="empty-state">
-        <span class="empty-state-icon">♞</span>
-        <h2 class="empty-state-title">No Games Analyzed Yet</h2>
-        <p class="empty-state-text">Import your Lichess game history to unlock performance insights — openings, trends, streaks, and more.</p>
-        <div class="empty-state-actions">
-          <button class="btn-hero btn-hero--primary" id="upload-pgn-btn-hero">⬆️ Upload PGN</button>
-          <button class="btn-hero btn-hero--secondary" id="load-demo-btn">▶ Try Demo Data</button>
+      <!-- Empty state — Hero onboarding -->
+      <section class="onboarding-hero" id="empty-state">
+
+        <!-- Top: value prop -->
+        <div class="oh-header">
+          <div class="oh-badge">Free · No account needed · Works with any Lichess username</div>
+          <h1 class="oh-title">Understand your chess, deeply.</h1>
+          <p class="oh-sub">Drop in your Lichess games and get instant analysis across openings, time controls, streaks, trends and more — all in your browser.</p>
         </div>
+
+        <!-- Middle: dashboard preview SVG -->
+        <div class="oh-preview" aria-hidden="true">
+          <svg viewBox="0 0 860 340" xmlns="http://www.w3.org/2000/svg" class="oh-preview-svg">
+            <!-- Background -->
+            <rect width="860" height="340" rx="12" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1"/>
+
+            <!-- Stat cards row -->
+            <rect x="16" y="16" width="188" height="72" rx="6" fill="var(--input-bg)" stroke="var(--card-border)" stroke-width="1"/>
+            <rect x="16" y="16" width="188" height="3" rx="2" fill="var(--lc-biscuit)"/>
+            <text x="28" y="38" font-family="Noto Sans,sans-serif" font-size="9" fill="var(--text-muted)" font-weight="600" letter-spacing="0.5">TOTAL GAMES</text>
+            <text x="28" y="62" font-family="Noto Sans,sans-serif" font-size="26" fill="var(--text-primary)" font-weight="700">255</text>
+
+            <rect x="216" y="16" width="188" height="72" rx="6" fill="var(--input-bg)" stroke="var(--card-border)" stroke-width="1"/>
+            <rect x="216" y="16" width="188" height="3" rx="2" fill="var(--lc-biscuit)"/>
+            <text x="228" y="38" font-family="Noto Sans,sans-serif" font-size="9" fill="var(--text-muted)" font-weight="600" letter-spacing="0.5">WIN RATE</text>
+            <text x="228" y="62" font-family="Noto Sans,sans-serif" font-size="26" fill="var(--lc-biscuit)" font-weight="700">54.1%</text>
+
+            <rect x="416" y="16" width="188" height="72" rx="6" fill="var(--input-bg)" stroke="var(--card-border)" stroke-width="1"/>
+            <rect x="416" y="16" width="188" height="3" rx="2" fill="var(--lc-biscuit)"/>
+            <text x="428" y="38" font-family="Noto Sans,sans-serif" font-size="9" fill="var(--text-muted)" font-weight="600" letter-spacing="0.5">BEST TIME CONTROL</text>
+            <text x="428" y="62" font-family="Noto Sans,sans-serif" font-size="22" fill="var(--color-win)" font-weight="700">Rapid</text>
+
+            <rect x="616" y="16" width="228" height="72" rx="6" fill="var(--input-bg)" stroke="var(--card-border)" stroke-width="1"/>
+            <rect x="616" y="16" width="228" height="3" rx="2" fill="var(--lc-biscuit)"/>
+            <text x="628" y="38" font-family="Noto Sans,sans-serif" font-size="9" fill="var(--text-muted)" font-weight="600" letter-spacing="0.5">MOST COMMON LOSS</text>
+            <text x="628" y="62" font-family="Noto Sans,sans-serif" font-size="19" fill="var(--color-loss)" font-weight="700">Resignation</text>
+
+            <!-- Donut chart card -->
+            <rect x="16" y="104" width="240" height="220" rx="8" fill="var(--input-bg)" stroke="var(--card-border)" stroke-width="1"/>
+            <text x="28" y="124" font-family="Noto Sans,sans-serif" font-size="11" fill="var(--text-primary)" font-weight="700">Win / Loss / Draw</text>
+            <!-- Donut rings -->
+            <circle cx="116" cy="208" r="58" fill="none" stroke="var(--card-border)" stroke-width="22"/>
+            <circle cx="116" cy="208" r="58" fill="none" stroke="var(--color-win)"  stroke-width="22" stroke-dasharray="196 368" stroke-dashoffset="92"  stroke-linecap="butt"/>
+            <circle cx="116" cy="208" r="58" fill="none" stroke="var(--color-loss)" stroke-width="22" stroke-dasharray="118 368" stroke-dashoffset="-104" stroke-linecap="butt"/>
+            <circle cx="116" cy="208" r="58" fill="none" stroke="var(--color-draw)" stroke-width="22" stroke-dasharray="54 368"  stroke-dashoffset="-222" stroke-linecap="butt"/>
+            <text x="116" y="204" text-anchor="middle" font-family="Noto Sans,sans-serif" font-size="18" fill="var(--text-primary)" font-weight="700">54%</text>
+            <text x="116" y="218" text-anchor="middle" font-family="Noto Sans,sans-serif" font-size="8"  fill="var(--text-muted)">win rate</text>
+            <!-- Legend -->
+            <circle cx="170" cy="280" r="4" fill="var(--color-win)"/>
+            <text x="178" y="284" font-family="Noto Sans,sans-serif" font-size="8" fill="var(--text-secondary)">Wins</text>
+            <circle cx="200" cy="280" r="4" fill="var(--color-loss)"/>
+            <text x="208" y="284" font-family="Noto Sans,sans-serif" font-size="8" fill="var(--text-secondary)">Loss</text>
+            <circle cx="230" cy="280" r="4" fill="var(--color-draw)"/>
+            <text x="238" y="284" font-family="Noto Sans,sans-serif" font-size="8" fill="var(--text-secondary)">Draw</text>
+
+            <!-- Games over time bar chart -->
+            <rect x="272" y="104" width="296" height="220" rx="8" fill="var(--input-bg)" stroke="var(--card-border)" stroke-width="1"/>
+            <text x="284" y="124" font-family="Noto Sans,sans-serif" font-size="11" fill="var(--text-primary)" font-weight="700">Games Over Time</text>
+            <!-- Bars -->
+            <rect x="295" y="190" width="24" height="100" rx="3" fill="var(--lc-biscuit)" opacity="0.9"/>
+            <rect x="327" y="160" width="24" height="130" rx="3" fill="var(--lc-biscuit)" opacity="0.9"/>
+            <rect x="359" y="230" width="24" height="60"  rx="3" fill="var(--lc-biscuit)" opacity="0.9"/>
+            <rect x="391" y="200" width="24" height="90"  rx="3" fill="var(--lc-biscuit)" opacity="0.9"/>
+            <rect x="423" y="250" width="24" height="40"  rx="3" fill="var(--lc-biscuit)" opacity="0.9"/>
+            <rect x="455" y="175" width="24" height="115" rx="3" fill="var(--lc-biscuit)" opacity="0.9"/>
+            <rect x="487" y="215" width="24" height="75"  rx="3" fill="var(--lc-biscuit)" opacity="0.9"/>
+            <rect x="519" y="205" width="24" height="85"  rx="3" fill="var(--lc-biscuit)" opacity="0.9"/>
+            <!-- X labels -->
+            <text x="302" y="308" font-family="Noto Sans,sans-serif" font-size="7" fill="var(--text-muted)">Aug</text>
+            <text x="334" y="308" font-family="Noto Sans,sans-serif" font-size="7" fill="var(--text-muted)">Sep</text>
+            <text x="366" y="308" font-family="Noto Sans,sans-serif" font-size="7" fill="var(--text-muted)">Oct</text>
+            <text x="398" y="308" font-family="Noto Sans,sans-serif" font-size="7" fill="var(--text-muted)">Nov</text>
+            <text x="430" y="308" font-family="Noto Sans,sans-serif" font-size="7" fill="var(--text-muted)">Dec</text>
+            <text x="462" y="308" font-family="Noto Sans,sans-serif" font-size="7" fill="var(--text-muted)">Jan</text>
+            <text x="494" y="308" font-family="Noto Sans,sans-serif" font-size="7" fill="var(--text-muted)">Feb</text>
+            <text x="526" y="308" font-family="Noto Sans,sans-serif" font-size="7" fill="var(--text-muted)">Mar</text>
+
+            <!-- Openings table card -->
+            <rect x="584" y="104" width="260" height="220" rx="8" fill="var(--input-bg)" stroke="var(--card-border)" stroke-width="1"/>
+            <text x="596" y="124" font-family="Noto Sans,sans-serif" font-size="11" fill="var(--text-primary)" font-weight="700">Top Openings</text>
+            <!-- Table rows -->
+            <rect x="584" y="130" width="260" height="1" fill="var(--card-border)"/>
+            <!-- Row 1 -->
+            <text x="596" y="152" font-family="Noto Sans,sans-serif" font-size="9" fill="var(--text-primary)" font-weight="600">Ruy Lopez</text>
+            <rect x="596" y="158" width="140" height="5" rx="2" fill="var(--color-win)" opacity="0.8"/>
+            <text x="742" y="163" font-family="Noto Sans,sans-serif" font-size="8" fill="var(--color-win)" font-weight="700">68%</text>
+            <!-- Row 2 -->
+            <text x="596" y="183" font-family="Noto Sans,sans-serif" font-size="9" fill="var(--text-primary)" font-weight="600">Sicilian Defense</text>
+            <rect x="596" y="189" width="110" height="5" rx="2" fill="var(--color-win)" opacity="0.8"/>
+            <text x="742" y="194" font-family="Noto Sans,sans-serif" font-size="8" fill="var(--color-win)" font-weight="700">61%</text>
+            <!-- Row 3 -->
+            <text x="596" y="214" font-family="Noto Sans,sans-serif" font-size="9" fill="var(--text-primary)" font-weight="600">French Defense</text>
+            <rect x="596" y="220" width="80" height="5" rx="2" fill="var(--color-draw)" opacity="0.8"/>
+            <text x="742" y="225" font-family="Noto Sans,sans-serif" font-size="8" fill="var(--color-draw)" font-weight="700">48%</text>
+            <!-- Row 4 -->
+            <text x="596" y="245" font-family="Noto Sans,sans-serif" font-size="9" fill="var(--text-primary)" font-weight="600">King's Indian</text>
+            <rect x="596" y="251" width="60" height="5" rx="2" fill="var(--color-loss)" opacity="0.8"/>
+            <text x="742" y="256" font-family="Noto Sans,sans-serif" font-size="8" fill="var(--color-loss)" font-weight="700">38%</text>
+            <!-- Row 5 -->
+            <text x="596" y="276" font-family="Noto Sans,sans-serif" font-size="9" fill="var(--text-primary)" font-weight="600">Queen's Gambit</text>
+            <rect x="596" y="282" width="92" height="5" rx="2" fill="var(--color-win)" opacity="0.8"/>
+            <text x="742" y="287" font-family="Noto Sans,sans-serif" font-size="8" fill="var(--color-win)" font-weight="700">55%</text>
+
+            <!-- Blur/fade overlay to hint at more content below -->
+            <defs>
+              <linearGradient id="fadeOut" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="60%" stop-color="transparent"/>
+                <stop offset="100%" stop-color="var(--bg-color)"/>
+              </linearGradient>
+            </defs>
+            <rect width="860" height="340" rx="12" fill="url(#fadeOut)"/>
+          </svg>
+          <div class="oh-preview-label">↑ Live preview — your real data will look like this</div>
+        </div>
+
+        <!-- Features strip -->
+        <div class="oh-features">
+          <div class="oh-feature">
+            <span class="oh-feature-icon">♟️</span>
+            <span class="oh-feature-text">Opening win rates</span>
+          </div>
+          <div class="oh-feature">
+            <span class="oh-feature-icon">📈</span>
+            <span class="oh-feature-text">Rating trends</span>
+          </div>
+          <div class="oh-feature">
+            <span class="oh-feature-icon">⚖️</span>
+            <span class="oh-feature-text">White vs Black</span>
+          </div>
+          <div class="oh-feature">
+            <span class="oh-feature-icon">🔥</span>
+            <span class="oh-feature-text">Streak analysis</span>
+          </div>
+          <div class="oh-feature">
+            <span class="oh-feature-icon">⏱️</span>
+            <span class="oh-feature-text">Time control stats</span>
+          </div>
+          <div class="oh-feature">
+            <span class="oh-feature-icon">💡</span>
+            <span class="oh-feature-text">Coaching insights</span>
+          </div>
+        </div>
+
+        <!-- Bottom CTAs -->
+        <div class="oh-ctas">
+          <button class="oh-cta oh-cta--primary" id="upload-pgn-btn-hero">
+            <span class="oh-cta-icon">⬆️</span>
+            <span class="oh-cta-body">
+              <strong>Import from Lichess</strong>
+              <span>Enter your username or upload a PGN file</span>
+            </span>
+          </button>
+          <button class="oh-cta oh-cta--secondary" id="load-demo-btn">
+            <span class="oh-cta-icon">▶</span>
+            <span class="oh-cta-body">
+              <strong>Try Demo Data</strong>
+              <span>Explore with sample games instantly</span>
+            </span>
+          </button>
+        </div>
+
       </section>
 
       <!-- Dashboard -->
       <section class="dashboard hidden" id="dashboard">
 
         <!-- Filters -->
-        <div class="filters-bar" id="global-filters" style="margin-bottom:var(--sp-lg)">
+              <!-- Active filter chips -->
+      <div class="active-filter-bar hidden" id="active-filter-bar"></div>
+
+      <div class="filters-bar" id="global-filters" style="margin-bottom:var(--sp-lg)">
           <div class="filter-group">
             <span class="filter-label">Time Control</span>
             <select class="filter-select" id="page-filter-tc">
@@ -219,6 +378,10 @@
         </div>
 
       </section>
+
+      <!-- Next page suggestion -->
+      <div class="next-page-suggestion hidden" id="next-page-suggestion"></div>
+
     </main>
   </div>
 

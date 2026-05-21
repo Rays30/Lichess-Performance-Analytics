@@ -105,6 +105,10 @@
     <div class="sidebar-overlay hidden" id="sidebar-overlay"></div>
 
     <main class="main-content" id="main-content">
+    <!-- Welcome banner (shown after import) -->
+    <div class="welcome-banner hidden" id="welcome-banner"></div>
+
+
             <div class="page-header">
         <div>
           <h1 class="page-title">Game Length Analysis</h1>
@@ -125,7 +129,10 @@
       <section class="dashboard hidden" id="dashboard">
 
         <!-- SECTION: Filters -->
-        <div class="filters-bar" id="global-filters" style="margin-bottom:var(--sp-lg)">
+              <!-- Active filter chips -->
+      <div class="active-filter-bar hidden" id="active-filter-bar"></div>
+
+      <div class="filters-bar" id="global-filters" style="margin-bottom:var(--sp-lg)">
           <div class="filter-group">
             <span class="filter-label">Time Control</span>
             <select class="filter-select" id="page-filter-tc">
@@ -185,6 +192,10 @@
           <div class="insight-box" id="insight-gamelength"></div>
         </div>
       </section>
+
+      <!-- Next page suggestion -->
+      <div class="next-page-suggestion hidden" id="next-page-suggestion"></div>
+
     </main>
   </div>
 
