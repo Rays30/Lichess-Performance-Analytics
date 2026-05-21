@@ -1,8 +1,8 @@
-# ♟ Chess Performance Analytics
+# ♞ Lichess Performance Analytics
 
 A browser-based analytics dashboard that turns raw chess game data into actionable performance insights — no server, no signup, no dependencies.
 
-[Live Demo]()
+[🔴 Live Demo](https://lichess-performance-analytics.vercel.app) · [GitHub](https://github.com/rays30/lichess-performance-analytics)
 
 ---
 
@@ -52,3 +52,7 @@ I deliberately avoided React and complex build tools. The goal was to prove I ca
 ---
 
 *Built by hand. No frameworks. No AI-generated analysis. Just data, logic, and curiosity.*
+
+---
+
+> **Stack:** HTML · CSS · Vanilla JS · Chart.js · localStorage · Zero build tools

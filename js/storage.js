@@ -17,19 +17,86 @@ const Storage = (function () {
 
   // --- Games ---
 
+
+  // --- Storage toast notification ---
+  function showStorageToast(title, message, type) {
+    // Create toast if it doesn't exist
+    var existing = document.getElementById('storage-toast');
+    if (existing) existing.remove();
+
+    var toast = document.createElement('div');
+    toast.id = 'storage-toast';
+    toast.className = 'storage-toast storage-toast--' + (type || 'error');
+    toast.innerHTML =
+      '<div class="st-inner">' +
+        '<div class="st-body">' +
+          '<strong class="st-title">' + title + '</strong>' +
+          '<span class="st-msg">' + message + '</span>' +
+        '</div>' +
+        '<div class="st-actions">' +
+          '<button class="st-btn st-btn--action" id="st-export-btn">Export data</button>' +
+          '<button class="st-btn st-btn--dismiss" id="st-dismiss-btn">&times;</button>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(toast);
+
+    // Wire buttons after DOM insertion
+    var exportBtn = document.getElementById('st-export-btn');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', function() {
+        var eb = document.getElementById('export-btn');
+        if (eb) eb.click();
+        toast.remove();
+      });
+    }
+    var dismissBtn = document.getElementById('st-dismiss-btn');
+    if (dismissBtn) {
+      dismissBtn.addEventListener('click', function() { toast.remove(); });
+    }
+
+    // Animate in
+    requestAnimationFrame(function() { toast.classList.add('storage-toast--visible'); });
+
+    // Auto-dismiss warnings after 10s, errors stay until dismissed
+    if (type === 'warning') {
+      setTimeout(function() {
+        if (toast.parentNode) {
+          toast.classList.remove('storage-toast--visible');
+          setTimeout(function() { if (toast.parentNode) toast.remove(); }, 400);
+        }
+      }, 10000);
+    }
+  }
+
   function saveGames(games) {
     if (!Array.isArray(games)) return false;
     try {
       const json = JSON.stringify(games);
       if (json.length > MAX_STORAGE_WARNING_BYTES) {
+        var usedMB = (json.length / (1024 * 1024)).toFixed(1);
         console.warn('[Storage] Data approaching localStorage limit (' + json.length + ' bytes)');
+        showStorageToast(
+          '⚠️ Storage almost full (' + usedMB + 'MB / 5MB)',
+          'Export your data as a backup soon to avoid losing access.',
+          'warning'
+        );
       }
       localStorage.setItem(KEYS.GAMES, json);
       localStorage.setItem(KEYS.LAST_UPDATED, new Date().toISOString());
       return true;
     } catch (e) {
-      if (e.name === 'QuotaExceededError' || e.code === 22) {
-        console.error('[Storage] localStorage full. Export your data as backup.');
+      if (e.name === 'QuotaExceededError' || e.code === 22 || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+        console.error('[Storage] localStorage full.');
+        // Surface a visible toast to the user
+        if (typeof window !== 'undefined') {
+          var sizeKB = Math.round(JSON.stringify(games).length / 1024);
+          showStorageToast(
+            '⚠️ Storage full (' + sizeKB + 'KB)',
+            'Your browser storage is full. Export your data as a backup, then clear it to import more games.',
+            'error'
+          );
+        }
         return false;
       }
       console.error('[Storage] Failed to save games:', e);
