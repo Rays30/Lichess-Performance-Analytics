@@ -71,12 +71,12 @@ var UI = (function () {
     return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   }
   var LC = {
-    win:   function(){ return lcColor('--color-win')   || '#629924'; },
-    loss:  function(){ return lcColor('--color-loss')  || '#bf4040'; },
-    draw:  function(){ return lcColor('--color-draw')  || '#c8a45a'; },
-    blue:  function(){ return lcColor('--lc-blue')     || '#4a90d9'; },
-    biscuit: function(){ return lcColor('--lc-biscuit')|| '#b58863'; },
-    gray:  function(){ return '#8a847c'; },
+    win:   function(){ return lcColor('--color-win')   || '#4CAF50'; },
+    loss:  function(){ return lcColor('--color-loss')  || '#E53935'; },
+    draw:  function(){ return lcColor('--color-draw')  || '#FFB300'; },
+    blue:  function(){ return lcColor('--lc-blue')     || '#3692E7'; },
+    biscuit: function(){ return lcColor('--lc-biscuit')|| '#3692E7'; },
+    gray:  function(){ return '#71717A'; },
   };
 
 
@@ -86,8 +86,8 @@ var UI = (function () {
       mutations.forEach(function(mutation) {
         if (mutation.attributeName === 'data-theme') {
           var style = getComputedStyle(document.documentElement);
-          var textColor = style.getPropertyValue('--text-color').trim() || '#1e293b';
-          var gridColor = style.getPropertyValue('--border-color').trim() || '#e2e8f0';
+          var textColor = style.getPropertyValue('--text-secondary').trim() || '#3F3F46';
+          var gridColor = style.getPropertyValue('--card-border').trim() || '#E4E4E7';
           
           if (typeof Chart !== 'undefined') {
             Chart.defaults.color = textColor;
@@ -114,8 +114,8 @@ var UI = (function () {
     if (!el) return;
     
     var style = getComputedStyle(document.documentElement);
-    Chart.defaults.color = style.getPropertyValue('--text-secondary').trim() || '#a09890';
-    Chart.defaults.borderColor = style.getPropertyValue('--card-border').trim() || '#302c26';
+    Chart.defaults.color = style.getPropertyValue('--text-secondary').trim() || '#3F3F46';
+    Chart.defaults.borderColor = style.getPropertyValue('--card-border').trim() || '#E4E4E7';
 
     var ctx = el.getContext('2d');
     chartInstances[id] = new Chart(ctx, config);
@@ -135,8 +135,8 @@ var UI = (function () {
     // Update Chart.js defaults to match new theme
     if (typeof Chart !== 'undefined') {
       var s = getComputedStyle(document.documentElement);
-      Chart.defaults.color = s.getPropertyValue('--text-secondary').trim() || '#a09890';
-      Chart.defaults.borderColor = s.getPropertyValue('--card-border').trim() || '#302c26';
+      Chart.defaults.color = s.getPropertyValue('--text-secondary').trim() || '#3F3F46';
+      Chart.defaults.borderColor = s.getPropertyValue('--card-border').trim() || '#E4E4E7';
     }
   }
 
@@ -346,9 +346,9 @@ var UI = (function () {
     el.innerHTML = html;
 
     var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    var wC = isDark ? '#cbd5e1' : '#f8fafc';
-    var bC = isDark ? '#334155' : '#1e293b';
-    var borderColor = isDark ? '#475569' : '#cbd5e1';
+    var wC = isDark ? '#E4E4E7' : '#FAFAFA';
+    var bC = isDark ? '#27272A' : '#18181B';
+    var borderColor = isDark ? '#3F3F46' : '#E4E4E7';
 
     initChart('color-comparison-chart', {
       type: 'bar',
@@ -409,10 +409,9 @@ var UI = (function () {
     var labels = [];
     var rates = [];
     var colors = [];
-    var style = getComputedStyle(document.documentElement);
-    var wC = style.getPropertyValue('--color-win').trim() || '#629924';
-    var lC = style.getPropertyValue('--color-loss').trim() || '#bf4040';
-    var dC = style.getPropertyValue('--color-draw').trim() || '#c8a45a';
+    var wC = LC.win();
+    var lC = LC.loss();
+    var dC = LC.draw();
 
     for (var i = 0; i < activeBuckets.length; i++) {
       var b = activeBuckets[i];
@@ -682,10 +681,9 @@ var UI = (function () {
     // FEATURE: Chart.js migration
     el.innerHTML = '<div style="position:relative; height:250px; width:100%;"><canvas id="win-loss-donut"></canvas></div>';
     
-    var style = getComputedStyle(document.documentElement);
-    var wC = style.getPropertyValue('--color-win').trim() || '#629924';
-    var lC = style.getPropertyValue('--color-loss').trim() || '#bf4040';
-    var dC = style.getPropertyValue('--color-draw').trim() || '#c8a45a';
+    var wC = LC.win();
+    var lC = LC.loss();
+    var dC = LC.draw();
     
     initChart('win-loss-donut', {
       type: 'doughnut',
@@ -734,11 +732,11 @@ var UI = (function () {
   function renderRecentGames(a) {
     var el = document.getElementById('recent-games-table'); if (!el) return;
     var games = a.recentGames; if (!games || games.length === 0) { el.innerHTML = '<p class="card-disclaimer">No recent games.</p>'; return; }
-    var html = '<table class="data-table"><thead><tr><th>Date</th><th>Color</th><th>Opening</th><th>Time Control</th><th>Result</th><th>End Type</th></tr></thead><tbody>';
+    var html = '<table class="data-table"><thead><tr><th>Date</th><th>Color</th><th>Opening</th><th>Time Control</th><th class="text-right">Result</th><th class="text-right">End Type</th></tr></thead><tbody>';
     games.forEach(function(g){
       var rc = g.result === 'win' ? 'result-badge--win' : g.result === 'loss' ? 'result-badge--loss' : 'result-badge--draw';
       html += '<tr><td>'+(g.date||'—')+'</td><td>'+(g.playerColor||'—')+'</td><td>'+escapeHTML(g.opening||'—')+'</td><td>'+(g.timeControl||'—')+'</td>';
-      html += '<td><span class="result-badge '+rc+'">'+g.result+'</span></td><td>'+(g.outcomeType||'—')+'</td></tr>';
+      html += '<td class="text-right"><span class="result-badge '+rc+'">'+g.result+'</span></td><td class="text-right">'+(g.outcomeType||'—')+'</td></tr>';
     });
     html += '</tbody></table>'; el.innerHTML = html;
   }
@@ -773,10 +771,10 @@ var UI = (function () {
 
   function renderColorTable(c) {
     var el = document.getElementById('color-table'); if (!el) return;
-    var html = '<table class="data-table"><thead><tr><th>Color</th><th>Games</th><th>Wins</th><th>Losses</th><th>Draws</th><th>Win Rate</th></tr></thead><tbody>';
+    var html = '<table class="data-table"><thead><tr><th>Color</th><th class="text-right">Games</th><th class="text-right">Wins</th><th class="text-right">Losses</th><th class="text-right">Draws</th><th class="text-right">Win Rate</th></tr></thead><tbody>';
     ['white','black'].forEach(function(col){
       var d = c[col];
-      html += '<tr><td>'+capitalize(col)+'</td><td>'+d.total+'</td><td>'+d.wins+'</td><td>'+d.losses+'</td><td>'+d.draws+'</td><td style="font-weight:600">'+d.winRate+'%</td></tr>';
+      html += '<tr><td>'+capitalize(col)+'</td><td class="text-right">'+d.total+'</td><td class="text-right">'+d.wins+'</td><td class="text-right">'+d.losses+'</td><td class="text-right">'+d.draws+'</td><td class="text-right" style="font-weight:600">'+d.winRate+'%</td></tr>';
     });
     html += '</tbody></table>'; el.innerHTML = html;
   }
@@ -802,10 +800,10 @@ var UI = (function () {
   function renderTCTable(tc) {
     var el = document.getElementById('tc-table'); if (!el) return;
     var buckets = ['Bullet','Blitz','Rapid','Classical'];
-    var html = '<table class="data-table"><thead><tr><th>Time Control</th><th>Games</th><th>Wins</th><th>Losses</th><th>Draws</th><th>Win Rate</th></tr></thead><tbody>';
+    var html = '<table class="data-table"><thead><tr><th>Time Control</th><th class="text-right">Games</th><th class="text-right">Wins</th><th class="text-right">Losses</th><th class="text-right">Draws</th><th class="text-right">Win Rate</th></tr></thead><tbody>';
     buckets.forEach(function(b){
       var d = tc[b]; if (!d || d.total === 0) return;
-      html += '<tr><td>'+b+'</td><td>'+d.total+'</td><td>'+d.wins+'</td><td>'+d.losses+'</td><td>'+d.draws+'</td><td style="font-weight:600">'+d.winRate+'%</td></tr>';
+      html += '<tr><td>'+b+'</td><td class="text-right">'+d.total+'</td><td class="text-right">'+d.wins+'</td><td class="text-right">'+d.losses+'</td><td class="text-right">'+d.draws+'</td><td class="text-right" style="font-weight:600">'+d.winRate+'%</td></tr>';
     });
     html += '</tbody></table>'; el.innerHTML = html;
   }
@@ -815,11 +813,10 @@ var UI = (function () {
     var el1 = document.getElementById('opening-winrate-chart');
     var el2 = document.getElementById('opening-games-chart');
     
-    var style = getComputedStyle(document.documentElement);
-    var wC = style.getPropertyValue('--color-win').trim() || '#629924';
-    var lC = style.getPropertyValue('--color-loss').trim() || '#bf4040';
-    var dC = style.getPropertyValue('--color-draw').trim() || '#c8a45a';
-    var aC = style.getPropertyValue('--color-accent').trim() || '#6366f1';
+    var wC = LC.win();
+    var lC = LC.loss();
+    var dC = LC.draw();
+    var aC = LC.blue();
 
     if (el1) {
       if (qOps.length === 0) {
@@ -955,7 +952,7 @@ var UI = (function () {
   function renderOutcomeTable(out) {
     var el = document.getElementById('outcome-table'); if (!el) return;
     var types = ['checkmate','resignation','timeout','other'];
-    var html = '<table class="data-table"><thead><tr><th>Outcome</th><th>Wins</th><th>Win%</th><th>Losses</th><th>Loss%</th></tr></thead><tbody>';
+    var html = '<table class="data-table"><thead><tr><th>Outcome</th><th class="text-right">Wins</th><th class="text-right">Win%</th><th class="text-right">Losses</th><th class="text-right">Loss%</th></tr></thead><tbody>';
     types.forEach(function(t){
       var w=out.wins[t],l=out.losses[t];
       html += '<tr><td>'+capitalize(t)+'</td><td>'+(w?w.count:0)+'</td><td>'+(w?w.pct:0)+'%</td><td>'+(l?l.count:0)+'</td><td>'+(l?l.pct:0)+'%</td></tr>';
@@ -980,7 +977,7 @@ var UI = (function () {
   function renderGLTable(gl) {
     var el = document.getElementById('gl-table'); if (!el) return;
     if (!gl.buckets) return;
-    var html = '<table class="data-table"><thead><tr><th>Length Bucket</th><th>Wins</th><th>Losses</th><th>Draws</th><th>Total</th><th>Win Rate</th></tr></thead><tbody>';
+    var html = '<table class="data-table"><thead><tr><th>Length Bucket</th><th class="text-right">Wins</th><th class="text-right">Losses</th><th class="text-right">Draws</th><th class="text-right">Total</th><th class="text-right">Win Rate</th></tr></thead><tbody>';
     gl.buckets.forEach(function(b){
       if (b.total === 0) return;
       html += '<tr><td>'+b.label+' moves</td><td>'+b.wins+'</td><td>'+b.losses+'</td><td>'+b.draws+'</td><td>'+b.total+'</td><td style="font-weight:600">'+b.winRate+'%</td></tr>';
@@ -1006,7 +1003,7 @@ var UI = (function () {
   function renderGPTable(gp) {
     var el = document.getElementById('gp-table'); if (!el) return;
     var phases = ['opening','middlegame','endgame'];
-    var html = '<table class="data-table"><thead><tr><th>Phase</th><th>Games</th><th>Wins</th><th>Losses</th><th>Win Rate</th></tr></thead><tbody>';
+    var html = '<table class="data-table"><thead><tr><th>Phase</th><th class="text-right">Games</th><th class="text-right">Wins</th><th class="text-right">Losses</th><th class="text-right">Win Rate</th></tr></thead><tbody>';
     phases.forEach(function(p){
       var d = gp[p];
       html += '<tr><td>'+capitalize(p)+'</td><td>'+d.count+'</td><td>'+d.wins+'</td><td>'+d.losses+'</td><td style="font-weight:600">'+d.winRate+'%</td></tr>';
@@ -1153,12 +1150,12 @@ var UI = (function () {
 
     // SECTION 2: Charts
     var labels = gbm.map(function(m) { return m.month; });
+    var wC = LC.win();
+    var lC = LC.loss();
+    var dC = LC.draw();
+    var aC = LC.blue();
     var style = getComputedStyle(document.documentElement);
-    var wC = style.getPropertyValue('--color-win').trim() || '#629924';
-    var lC = style.getPropertyValue('--color-loss').trim() || '#bf4040';
-    var dC = style.getPropertyValue('--color-draw').trim() || '#c8a45a';
-    var aC = style.getPropertyValue('--color-accent').trim() || '#6366f1';
-    var wBg = 'rgba(34, 197, 94, 0.2)';
+    var wBg = style.getPropertyValue('--color-win-soft').trim() || 'rgba(76, 175, 80, 0.1)';
 
     initChart('trend-winrate-chart', {
       type: 'line',
@@ -1246,7 +1243,7 @@ var UI = (function () {
     document.getElementById('trend-insights-list').innerHTML = insightsHtml;
 
     // SECTION 4: Table
-    var tableHtml = '<table class="data-table"><thead><tr><th>Month</th><th>Games</th><th>Wins</th><th>Losses</th><th>Draws</th><th>Win Rate</th><th>Avg Rating</th></tr></thead><tbody>';
+    var tableHtml = '<table class="data-table"><thead><tr><th>Month</th><th class="text-right">Games</th><th class="text-right">Wins</th><th class="text-right">Losses</th><th class="text-right">Draws</th><th class="text-right">Win Rate</th><th>Avg Rating</th></tr></thead><tbody>';
     var revGbm = gbm.slice().reverse();
     var bestMonth = null, maxWr = -1;
     revGbm.forEach(function(m) { if (m.winRate > maxWr && m.total >= 5) { maxWr = m.winRate; bestMonth = m.month; } });
@@ -1364,7 +1361,7 @@ var UI = (function () {
     var tcEl = document.getElementById('streak-tc-table');
     if (tcEl) {
       var tcKeys = ['Bullet', 'Blitz', 'Rapid', 'Classical'];
-      var tcHtml = '<table class="data-table"><thead><tr><th>Time Control</th><th>Longest Win</th><th>Longest Loss</th><th>Current</th></tr></thead><tbody>';
+      var tcHtml = '<table class="data-table"><thead><tr><th>Time Control</th><th class="text-right">Longest Win</th><th class="text-right">Longest Loss</th><th class="text-right">Current</th></tr></thead><tbody>';
       var tcFound = false;
       tcKeys.forEach(function(tc) {
         var d = s.streaksByTimeControl[tc];
@@ -1388,7 +1385,7 @@ var UI = (function () {
     // Table 2: Streaks by Color
     var colEl = document.getElementById('streak-color-table');
     if (colEl) {
-      var colHtml = '<table class="data-table"><thead><tr><th>Color</th><th>Longest Win</th><th>Longest Loss</th><th>Current</th></tr></thead><tbody>';
+      var colHtml = '<table class="data-table"><thead><tr><th>Color</th><th class="text-right">Longest Win</th><th class="text-right">Longest Loss</th><th class="text-right">Current</th></tr></thead><tbody>';
       ['white', 'black'].forEach(function(c) {
         var d = s.streaksByColor[c];
         colHtml += '<tr><td>' + capitalize(c) + '</td><td class="val-win" style="font-weight:600">' + d.longestWin + '</td><td class="val-loss" style="font-weight:600">' + d.longestLoss + '</td><td>' + (d.currentStreak || '—') + '</td></tr>';

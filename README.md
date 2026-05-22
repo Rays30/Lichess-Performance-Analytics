@@ -34,7 +34,7 @@ This isn't a to-do app. It's a data pipeline that runs in your browser:
 
 | Layer | Choice |
 |-------|--------|
-| Frontend | HTML, CSS, JavaScript |
+| Frontend | HTML, CSS (Zinc Design System), Vanilla JS |
 | Visualizations | Chart.js (via CDN) |
 | Storage | localStorage |
 | Backend | None |

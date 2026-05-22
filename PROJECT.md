@@ -165,6 +165,16 @@ If deploying to a static host, no environment configuration is needed.
 
 ## PROGRESS TRACKER
 
+### UI Redesign (v2) — Completed
+| Phase | State | Notes |
+|-------|-------|-------|
+| 1. Planning & Audit | ✅ DONE | Evaluated legacy UI and defined Zinc-based design system |
+| 2. Core Tokens | ✅ DONE | Migrated to semantic CSS variables, retired legacy Lichess hexes |
+| 3. Component Refactor | ✅ DONE | Upgraded tables, cards, and stat blocks to new aesthetic |
+| 4. Chart Data Layer | ✅ DONE | Dynamically wired Chart.js config to CSS semantic tokens |
+| 5. UX Polish | ✅ DONE | Added modal animations, button states, and polished empty states |
+| 6. Responsive Audit | ✅ DONE | Implemented mobile touch targets (44px) and safe horizontal bounds |
+
 ### Phase 1 — Core Build
 | Module | State | Notes |
 |--------|-------|-------|
