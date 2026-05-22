@@ -944,3 +944,74 @@ button:focus-visible,a:focus-visible,.filter-select:focus-visible{outline:2px so
   padding: 3px 8px;
 }
 .st-btn--dismiss:hover { color: var(--text-primary); }
+/* === Floating Help Button (FAB) === */
+.help-fab {
+  position: fixed;
+  bottom: var(--sp-lg);
+  right: var(--sp-lg);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 90;
+  transition: all 0.2s ease;
+}
+
+.help-fab:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.6);
+  background-color: var(--color-accent-hover);
+}
+
+.help-fab:active {
+  transform: translateY(0) scale(0.95);
+}
+
+/* === Help Guide Modal specific styles === */
+.help-section {
+  margin-bottom: var(--sp-lg);
+  padding-bottom: var(--sp-md);
+  border-bottom: 1px solid var(--card-border);
+}
+.help-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+.help-section-title {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  color: var(--text-primary);
+  font-size: 16px;
+  margin-bottom: var(--sp-sm);
+}
+.help-section p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: var(--sp-sm);
+}
+.help-list {
+  padding-left: 20px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.help-list a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+.help-list a:hover {
+  text-decoration: underline;
+}
+.help-list strong {
+  color: var(--text-primary);
+}

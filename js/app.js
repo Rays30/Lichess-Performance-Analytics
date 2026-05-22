@@ -121,6 +121,19 @@
 
   function applyFiltersAndRender() {
     var allGames = Storage.loadGames();
+    
+    var isDemo = Storage.getIsDemo();
+    var existingAlert = document.getElementById('demo-mode-alert');
+    if (isDemo && allGames && allGames.length > 0) {
+       if (!existingAlert) {
+           var alertHtml = '<div id="demo-mode-alert" style="background: var(--card-bg); border: 1px dashed var(--color-primary); padding: 12px 16px; border-radius: var(--radius-md); margin-bottom: var(--sp-lg); display: flex; justify-content: space-between; align-items: center;"><span style="font-size: var(--font-sm);"><strong style="color: var(--color-primary);">Demo Mode Active</strong> — Exploring sample data.</span><button class="btn" style="background: var(--color-loss); color: #fff; padding: 6px 12px; font-size: var(--font-xs);" onclick="document.getElementById(\'clear-btn\').click()">Clear Demo Data</button></div>';
+           var pageHeader = document.querySelector('.page-header');
+           if (pageHeader) pageHeader.insertAdjacentHTML('beforebegin', alertHtml);
+       }
+    } else if (existingAlert) {
+       existingAlert.remove();
+    }
+
     if (!allGames || allGames.length === 0) {
       UI.showEmptyState();
       return;
@@ -387,6 +400,12 @@
     }
 
     var username = UI.getUsernameInput();
+    if (!username) {
+      UI.hidePgnModal();
+      UI.highlightUsernameInput();
+      return;
+    }
+    
     Storage.setUsername(username);
 
     UI.showProcessingFeedback('Parsing games...');
@@ -413,6 +432,7 @@
       }
 
       // 3. Save to Storage (this appends new games to existing library)
+      if (Storage.getIsDemo()) Storage.clearGames();
       var existingGames = Storage.loadGames();
       var merged = existingGames.concat(extractResult.games);
       Storage.saveGames(merged);
@@ -434,7 +454,7 @@
       
       // We show an alert instead of modal warning since modal closes on success
       if (parseResult.duplicateCount > 0 || parseResult.invalidCount > 0) {
-          setTimeout(function() { alert(warningMsg); }, 100);
+          setTimeout(function() { UI.showAlertModal('Notice', warningMsg); }, 100);
       }
 
     }, 50);
@@ -444,9 +464,9 @@
   async function handleLichessFetch() {
     var username = UI.getUsernameInput();
     if (!username) {
-      username = prompt('Please enter your Lichess username:');
-      if (!username) return; // User cancelled
-      UI.setUsernameInput(username);
+      if (typeof UI.hidePgnModal === 'function') UI.hidePgnModal();
+      UI.highlightUsernameInput();
+      return;
     }
 
     Storage.setUsername(username);
@@ -458,14 +478,14 @@
 
       if (!response.ok) {
         UI.hideProcessingFeedback();
-        alert('Lichess API error: HTTP ' + response.status);
+        UI.showAlertModal('Notice', 'Lichess API error: HTTP ' + response.status);
         return;
       }
 
       var pgn = await response.text();
       if (!pgn.trim()) {
         UI.hideProcessingFeedback();
-        alert('No games found for user "' + username + '" on Lichess.');
+        UI.showAlertModal('Notice', 'No games found for user "' + username + '" on Lichess.');
         return;
       }
 
@@ -484,6 +504,7 @@
         return;
       }
 
+      if (Storage.getIsDemo()) Storage.clearGames();
       var existingGames = Storage.loadGames();
       var merged = existingGames.concat(extractResult.games);
       Storage.saveGames(merged);
@@ -498,11 +519,11 @@
       if (parseResult.duplicateCount > 0 || parseResult.invalidCount > 0) {
         msg += ' (Skipped: ' + parseResult.duplicateCount + ' duplicates, ' + parseResult.invalidCount + ' invalid)';
       }
-      setTimeout(function() { alert(msg); }, 100);
+      setTimeout(function() { UI.showAlertModal('Notice', msg); }, 100);
 
     } catch (err) {
       UI.hideProcessingFeedback();
-      alert('Lichess fetch failed: ' + err.message);
+      UI.showAlertModal('Notice', 'Lichess fetch failed: ' + err.message);
     }
   }
 
@@ -510,13 +531,12 @@
   function handleLoadDemo() {
     UI.showProcessingFeedback('Loading demo data...');
     try {
-      Storage.setUsername('DemoPlayer');
-      UI.setUsernameInput('DemoPlayer');
+      Storage.setIsDemo(true);
       var pgn = DemoData.getDemoPgn();
       var parseResult = Parser.parsePGN(pgn);
-      if (parseResult.validGames.length === 0) { UI.hideProcessingFeedback(); alert('Demo parse failed.'); return; }
+      if (parseResult.validGames.length === 0) { UI.hideProcessingFeedback(); UI.showAlertModal('Notice', 'Demo parse failed.'); return; }
       var extractResult = Extractor.extractGames(parseResult.validGames);
-      if (extractResult.games.length === 0) { UI.hideProcessingFeedback(); alert('Demo extraction failed.'); return; }
+      if (extractResult.games.length === 0) { UI.hideProcessingFeedback(); UI.showAlertModal('Notice', 'Demo extraction failed.'); return; }
       var merged = Storage.loadGames().concat(extractResult.games);
       Storage.saveGames(merged);
       UI.updateSidebarStats(Storage.getGameCount(), Storage.getLastUpdated());
@@ -524,7 +544,7 @@
       UI.hideProcessingFeedback();
     } catch (err) {
       UI.hideProcessingFeedback();
-      alert('Demo load failed: ' + err.message);
+      UI.showAlertModal('Notice', 'Demo load failed: ' + err.message);
     }
   }
 
@@ -573,12 +593,26 @@
     var demoBtn = document.getElementById('load-demo-btn');
     if (demoBtn) demoBtn.addEventListener('click', handleLoadDemo);
 
+    // Help Guide
+    var helpFab = document.getElementById('help-fab');
+    var helpModal = document.getElementById('help-modal');
+    var helpModalClose = document.getElementById('help-modal-close');
+    var helpModalGotit = document.getElementById('help-modal-gotit');
+    
+    if (helpFab && helpModal) {
+      helpFab.addEventListener('click', function() { helpModal.classList.remove('hidden'); });
+    }
+    var closeHelp = function() { if (helpModal) helpModal.classList.add('hidden'); };
+    if (helpModalClose) helpModalClose.addEventListener('click', closeHelp);
+    if (helpModalGotit) helpModalGotit.addEventListener('click', closeHelp);
+    if (helpModal) helpModal.addEventListener('click', function(e) { if (e.target === helpModal) closeHelp(); });
+
     // Export Data
     var exportBtn = document.getElementById('export-btn');
     if (exportBtn) {
       exportBtn.addEventListener('click', function() {
         if (Storage.getGameCount() === 0) {
-          alert('No data to export.');
+          UI.showAlertModal('Notice', 'No data to export.');
           return;
         }
         Storage.exportJSON();
@@ -600,13 +634,14 @@
         var reader = new FileReader();
         reader.onload = function(evt) {
           var contents = evt.target.result;
+          if (Storage.getIsDemo()) Storage.clearGames();
           var res = Storage.importJSON(contents);
           if (res.success) {
-            alert('Imported ' + res.imported + ' new games. Skipped ' + res.duplicates + ' duplicates.');
+            UI.showAlertModal('Notice', 'Imported ' + res.imported + ' new games. Skipped ' + res.duplicates + ' duplicates.');
             UI.updateSidebarStats(Storage.getGameCount(), Storage.getLastUpdated());
             processAndRender(Storage.loadGames());
           } else {
-            alert('Import failed: ' + res.error);
+            UI.showAlertModal('Notice', 'Import failed: ' + res.error);
           }
         };
         reader.readAsText(file);

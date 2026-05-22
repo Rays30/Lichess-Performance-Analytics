@@ -145,6 +145,8 @@ var UI = (function () {
   function showEmptyState() {
     if (els.dashboard) els.dashboard.classList.add('hidden');
     if (els.emptyState) els.emptyState.classList.remove('hidden');
+    var demoAlert = document.getElementById('demo-mode-alert');
+    if (demoAlert) demoAlert.remove();
   }
 
   function showDashboard() {
@@ -179,6 +181,21 @@ var UI = (function () {
   function hideConfirmModal() {
     if (els.confirmModal) els.confirmModal.classList.add('hidden');
     currentConfirmCallback = null;
+  }
+
+  function showAlertModal(title, text) {
+    if (els.confirmTitle) els.confirmTitle.textContent = title;
+    if (els.confirmText) els.confirmText.textContent = text;
+    if (els.confirmCancelBtn) els.confirmCancelBtn.style.display = 'none';
+    if (els.confirmBtn) els.confirmBtn.textContent = 'OK';
+    
+    currentConfirmCallback = function() {
+      if (els.confirmCancelBtn) els.confirmCancelBtn.style.display = '';
+      if (els.confirmBtn) els.confirmBtn.textContent = 'Confirm';
+      hideConfirmModal();
+    };
+    
+    if (els.confirmModal) els.confirmModal.classList.remove('hidden');
   }
 
   // --- Processing Feedback ---
@@ -1096,6 +1113,26 @@ var UI = (function () {
     return els.usernameInput ? els.usernameInput.value.trim() : '';
   }
 
+  function highlightUsernameInput() {
+    if (els.usernameInput) {
+      els.usernameInput.focus();
+      var originalBorder = els.usernameInput.style.borderColor;
+      var originalShadow = els.usernameInput.style.boxShadow;
+      var originalPlaceholder = els.usernameInput.placeholder;
+      
+      els.usernameInput.style.transition = 'box-shadow 0.3s ease, border-color 0.3s ease';
+      els.usernameInput.style.borderColor = 'var(--color-loss, #ef4444)';
+      els.usernameInput.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.3)';
+      els.usernameInput.placeholder = 'Username required!';
+      
+      setTimeout(function() {
+        els.usernameInput.style.borderColor = originalBorder;
+        els.usernameInput.style.boxShadow = originalShadow;
+        els.usernameInput.placeholder = originalPlaceholder;
+      }, 3000);
+    }
+  }
+
   function getPgnInput() {
     return els.pgnInput ? els.pgnInput.value : '';
   }
@@ -1482,6 +1519,7 @@ var UI = (function () {
     hidePgnModal: hidePgnModal,
     showConfirmModal: showConfirmModal,
     hideConfirmModal: hideConfirmModal,
+    showAlertModal: showAlertModal,
     showProcessingFeedback: showProcessingFeedback,
     hideProcessingFeedback: hideProcessingFeedback,
     showParseWarnings: showParseWarnings,
@@ -1489,6 +1527,7 @@ var UI = (function () {
     updateSidebarStats: updateSidebarStats,
     setUsernameInput: setUsernameInput,
     getUsernameInput: getUsernameInput,
+    highlightUsernameInput: highlightUsernameInput,
     getPgnInput: getPgnInput,
     getConfirmCallback: function() { return currentConfirmCallback; },
     renderTrendsDashboard: renderTrendsDashboard,

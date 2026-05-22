@@ -11,6 +11,7 @@ const Storage = (function () {
     THEME: 'chess_analyzer_theme',
     USERNAME: 'chess_analyzer_username',
     LAST_UPDATED: 'chess_analyzer_last_updated',
+    IS_DEMO: 'chess_analyzer_is_demo',
   };
 
   const MAX_STORAGE_WARNING_BYTES = 4 * 1024 * 1024; // 4MB warning threshold
@@ -120,6 +121,10 @@ const Storage = (function () {
     try {
       localStorage.removeItem(KEYS.GAMES);
       localStorage.removeItem(KEYS.LAST_UPDATED);
+      if (getIsDemo()) {
+        localStorage.removeItem(KEYS.USERNAME);
+        setIsDemo(false);
+      }
       return true;
     } catch (e) {
       console.error('[Storage] Failed to clear games:', e);
@@ -241,7 +246,9 @@ const Storage = (function () {
 
   function getUsername() {
     try {
-      return localStorage.getItem(KEYS.USERNAME) || '';
+      var un = localStorage.getItem(KEYS.USERNAME) || '';
+      if (un === 'DemoPlayer') return '';
+      return un;
     } catch (e) {
       return '';
     }
@@ -268,6 +275,27 @@ const Storage = (function () {
     }
   }
 
+  // --- Demo Mode ---
+  function getIsDemo() {
+    try {
+      return localStorage.getItem(KEYS.IS_DEMO) === 'true';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function setIsDemo(isDemo) {
+    try {
+      if (isDemo) {
+        localStorage.setItem(KEYS.IS_DEMO, 'true');
+      } else {
+        localStorage.removeItem(KEYS.IS_DEMO);
+      }
+    } catch (e) {
+      console.error('[Storage] Failed to save demo flag:', e);
+    }
+  }
+
   // --- Public API ---
   return {
     saveGames: saveGames,
@@ -281,5 +309,7 @@ const Storage = (function () {
     getUsername: getUsername,
     setUsername: setUsername,
     getLastUpdated: getLastUpdated,
+    getIsDemo: getIsDemo,
+    setIsDemo: setIsDemo,
   };
 })();
