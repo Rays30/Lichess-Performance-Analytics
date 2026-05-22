@@ -324,6 +324,68 @@ button:focus-visible,a:focus-visible,.filter-select:focus-visible{outline:2px so
 .vs-bar--white{background:#F4F4F5;color:#18181B}
 .vs-bar--black{background:#18181B;color:#FAFAFA}
 
+/* === Tooltip === */
+.tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  color: var(--card-bg);
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 6px;
+  cursor: help;
+  vertical-align: text-top;
+}
+.tooltip::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  background: var(--text-primary);
+  color: var(--bg-color);
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.tooltip::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  border-width: 4px;
+  border-style: solid;
+  border-color: var(--text-primary) transparent transparent transparent;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 100;
+}
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-8px);
+}
+.tooltip:hover::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
 /* === Tables === */
 .table-wrapper{overflow-x:auto;border-radius:var(--radius-md);border:1px solid var(--card-border)}
 .data-table{width:100%;border-collapse:collapse;font-size:var(--font-sm)}
@@ -747,7 +809,50 @@ button:focus-visible,a:focus-visible,.filter-select:focus-visible{outline:2px so
   transform: translateY(-2px);
 }
 
+.oh-steps {
+  display: flex;
+  justify-content: center;
+  gap: var(--sp-xl);
+  margin-top: var(--sp-2xl);
+  padding-top: var(--sp-xl);
+  border-top: 1px dashed var(--card-border);
+  width: 100%;
+}
+.oh-step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-md);
+  flex: 1;
+  max-width: 250px;
+}
+.oh-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-sm);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.oh-step-text {
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+  line-height: 1.4;
+  text-align: left;
+}
+.oh-step-text strong {
+  color: var(--text-primary);
+  display: block;
+  margin-bottom: 2px;
+}
+
 @media (max-width: 600px) {
+  .oh-steps { flex-direction: column; align-items: center; gap: var(--sp-lg); }
+  .oh-step { max-width: 100%; }
   .oh-ctas { flex-direction: column; align-items: stretch; }
   .oh-cta { min-width: unset; }
   .oh-features { gap: var(--sp-sm); }

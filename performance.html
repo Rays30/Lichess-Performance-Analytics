@@ -109,25 +109,84 @@
     <!-- Welcome banner (shown after import) -->
     <div class="welcome-banner hidden" id="welcome-banner"></div>
 
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">White vs Black</h1>
+        <p class="page-subtitle">Color performance comparison</p>
+      </div>
+    </div>
 
-            <div class="page-header">
-        <div>
-          <h1 class="page-title">White vs Black</h1>
-          <p class="page-subtitle">Color performance comparison</p>
+    <!-- Empty state — Hero onboarding -->
+    <section class="onboarding-hero" id="empty-state" style="padding-top: 0;">
+      <!-- Middle: dashboard preview SVG -->
+      <div class="oh-preview" aria-hidden="true" style="margin-top: var(--sp-lg); cursor: default; transform: perspective(1000px) rotateX(2deg);">
+        <svg viewBox="0 0 860 340" xmlns="http://www.w3.org/2000/svg" class="oh-preview-svg">
+
+            <rect width="860" height="340" rx="12" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1"/>
+            <rect x="16" y="16" width="188" height="72" rx="6" fill="var(--input-bg)" stroke="var(--card-border)" stroke-width="1"/>
+            <text x="28" y="38" font-family="Inter,sans-serif" font-size="9" fill="var(--text-muted)" font-weight="600" letter-spacing="0.5">BEST COLOR</text>
+            <text x="28" y="62" font-family="Inter,sans-serif" font-size="22" fill="var(--text-primary)" font-weight="700">White</text>
+            <rect x="216" y="16" width="188" height="72" rx="6" fill="var(--input-bg)" stroke="var(--card-border)" stroke-width="1"/>
+            <text x="228" y="38" font-family="Inter,sans-serif" font-size="9" fill="var(--text-muted)" font-weight="600" letter-spacing="0.5">TOTAL WINS</text>
+            <text x="228" y="62" font-family="Inter,sans-serif" font-size="26" fill="var(--color-win)" font-weight="700">124</text>
+            <rect x="416" y="16" width="188" height="72" rx="6" fill="var(--input-bg)" stroke="var(--card-border)" stroke-width="1"/>
+            <text x="428" y="38" font-family="Inter,sans-serif" font-size="9" fill="var(--text-muted)" font-weight="600" letter-spacing="0.5">TOTAL DRAWS</text>
+            <text x="428" y="62" font-family="Inter,sans-serif" font-size="26" fill="var(--color-draw)" font-weight="700">22</text>
+            <rect x="616" y="16" width="228" height="72" rx="6" fill="var(--input-bg)" stroke="var(--card-border)" stroke-width="1"/>
+            <text x="628" y="38" font-family="Inter,sans-serif" font-size="9" fill="var(--text-muted)" font-weight="600" letter-spacing="0.5">TOTAL LOSSES</text>
+            <text x="628" y="62" font-family="Inter,sans-serif" font-size="26" fill="var(--color-loss)" font-weight="700">109</text>
+            <rect x="16" y="104" width="400" height="220" rx="8" fill="var(--input-bg)" stroke="var(--card-border)" stroke-width="1"/>
+            <text x="28" y="124" font-family="Inter,sans-serif" font-size="11" fill="var(--text-primary)" font-weight="700">White Performance</text>
+            <circle cx="216" cy="208" r="60" fill="none" stroke="var(--card-border)" stroke-width="24"/>
+            <circle cx="216" cy="208" r="60" fill="none" stroke="var(--color-win)" stroke-width="24" stroke-dasharray="210 377" stroke-dashoffset="94" stroke-linecap="butt"/>
+            <text x="216" y="204" text-anchor="middle" font-family="Inter,sans-serif" font-size="20" fill="var(--text-primary)" font-weight="700">58%</text>
+            <rect x="432" y="104" width="412" height="220" rx="8" fill="var(--input-bg)" stroke="var(--card-border)" stroke-width="1"/>
+            <text x="444" y="124" font-family="Inter,sans-serif" font-size="11" fill="var(--text-primary)" font-weight="700">Black Performance</text>
+            <circle cx="638" cy="208" r="60" fill="none" stroke="var(--card-border)" stroke-width="24"/>
+            <circle cx="638" cy="208" r="60" fill="none" stroke="var(--color-win)" stroke-width="24" stroke-dasharray="180 377" stroke-dashoffset="94" stroke-linecap="butt"/>
+            <text x="638" y="204" text-anchor="middle" font-family="Inter,sans-serif" font-size="20" fill="var(--text-primary)" font-weight="700">49%</text>
+    
+            <defs><linearGradient id="fadeOut" x1="0" y1="0" x2="0" y2="1"><stop offset="60%" stop-color="transparent"/><stop offset="100%" stop-color="var(--bg-color)"/></linearGradient></defs>
+            <rect width="860" height="340" rx="12" fill="url(#fadeOut)"/>
+    
+        </svg>
+      </div>
+      
+      <div class="oh-ctas" style="margin-top: 32px; margin-bottom: 32px; justify-content: center;">
+        <button class="oh-cta oh-cta--primary" id="upload-pgn-btn-hero">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-btn-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <span class="oh-cta-body">
+            <strong>Import from Lichess</strong>
+            <span>Enter your username or upload a PGN file</span>
+          </span>
+        </button>
+        <button class="oh-cta oh-cta--secondary" id="load-demo-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-btn-icon"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          <span class="oh-cta-body">
+            <strong>Try Demo Data</strong>
+            <span>See how the dashboard works</span>
+          </span>
+        </button>
+      </div>
+    
+      <!-- Progressive Flow Steps -->
+      <div class="oh-steps" style="margin-top: 24px;">
+        <div class="oh-step">
+          <div class="oh-step-num">1</div>
+          <div class="oh-step-text"><strong>Export from Lichess</strong><br>Grab your games in PGN format.</div>
+        </div>
+        <div class="oh-step">
+          <div class="oh-step-num">2</div>
+          <div class="oh-step-text"><strong>Drop them here</strong><br>No account or signup needed.</div>
+        </div>
+        <div class="oh-step">
+          <div class="oh-step-num">3</div>
+          <div class="oh-step-text"><strong>Get instant insights</strong><br>Everything runs privately in your browser.</div>
         </div>
       </div>
+</section>
 
-<section class="empty-state" id="empty-state">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><path d="M12 3v18"></path><rect x="3" y="7" width="18" height="4" rx="1"></rect><path d="M8 11v5a4 4 0 0 0 8 0v-5"></path></svg>
-        <h2 class="empty-state-title">No Games Analyzed Yet</h2>
-        <p class="empty-state-text">Import your Lichess games to compare your performance with White and Black.</p>
-        <div class="empty-state-actions">
-          <button class="btn-hero btn-hero--primary" id="upload-pgn-btn-hero"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-btn-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Upload PGN</button>
-          <button class="btn-hero btn-hero--secondary" id="load-demo-btn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-btn-icon"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Try Demo Data</button>
-        </div>
-      </section>
-
-      <section class="dashboard hidden" id="dashboard">
+    <section class="dashboard hidden" id="dashboard">
 
         <!-- SECTION: Filters -->
               <!-- Active filter chips -->
@@ -160,7 +219,7 @@
           <div class="stat-card"><span class="stat-card-label">White Win Rate</span><span class="stat-card-value" id="val-white-wr">—</span><span class="stat-card-sub" id="val-white-wr-sub"></span></div>
           <div class="stat-card"><span class="stat-card-label">Black Win Rate</span><span class="stat-card-value" id="val-black-wr">—</span><span class="stat-card-sub" id="val-black-wr-sub"></span></div>
           <div class="stat-card"><span class="stat-card-label">Best Color</span><span class="stat-card-value val-accent" id="val-best-color">—</span><span class="stat-card-sub" id="val-best-color-sub"></span></div>
-          <div class="stat-card"><span class="stat-card-label">Differential</span><span class="stat-card-value" id="val-color-diff">—</span><span class="stat-card-sub">Win rate gap between colors</span></div>
+          <div class="stat-card"><span class="stat-card-label">Differential<span class="tooltip" data-tip="The absolute gap between your White and Black win rates">?</span></span><span class="stat-card-value" id="val-color-diff">—</span><span class="stat-card-sub">Win rate gap between colors</span></div>
         </div>
 
         <div class="charts-row">

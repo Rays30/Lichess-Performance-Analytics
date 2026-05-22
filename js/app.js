@@ -203,8 +203,6 @@
   function showWelcomeBanner(gameCount) {
     var banner = document.getElementById('welcome-banner');
     if (!banner) return;
-    // Only show on index/overview page
-    if (!document.getElementById('val-total-games')) return;
 
     banner.innerHTML =
       '<div class="wb-inner">' +

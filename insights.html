@@ -108,25 +108,71 @@
     <!-- Welcome banner (shown after import) -->
     <div class="welcome-banner hidden" id="welcome-banner"></div>
 
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Key Insights</h1>
+        <p class="page-subtitle">Coaching insights and improvement targets</p>
+      </div>
+    </div>
 
-            <div class="page-header">
-        <div>
-          <h1 class="page-title">Key Insights</h1>
-          <p class="page-subtitle">Coaching insights and improvement targets</p>
+    <!-- Empty state — Hero onboarding -->
+    <section class="onboarding-hero" id="empty-state" style="padding-top: 0;">
+      <!-- Middle: dashboard preview SVG -->
+      <div class="oh-preview" aria-hidden="true" style="margin-top: var(--sp-lg); cursor: default; transform: perspective(1000px) rotateX(2deg);">
+        <svg viewBox="0 0 860 340" xmlns="http://www.w3.org/2000/svg" class="oh-preview-svg">
+
+            <rect width="860" height="340" rx="12" fill="var(--card-bg)" stroke="var(--card-border)" stroke-width="1"/>
+            <rect x="16" y="16" width="828" height="90" rx="8" fill="var(--input-bg)" stroke="var(--card-border)" stroke-width="1"/>
+            <text x="36" y="44" font-family="Inter,sans-serif" font-size="16" fill="var(--text-primary)" font-weight="700">Strengths</text>
+            <text x="36" y="68" font-family="Inter,sans-serif" font-size="12" fill="var(--text-secondary)">You excel at finding tactical opportunities in the middlegame.</text>
+            <rect x="16" y="120" width="828" height="90" rx="8" fill="var(--input-bg)" stroke="var(--card-border)" stroke-width="1"/>
+            <text x="36" y="148" font-family="Inter,sans-serif" font-size="16" fill="var(--text-primary)" font-weight="700">Weaknesses</text>
+            <text x="36" y="172" font-family="Inter,sans-serif" font-size="12" fill="var(--text-secondary)">You often lose time advantage in drawn endgames.</text>
+            <rect x="16" y="224" width="828" height="90" rx="8" fill="var(--input-bg)" stroke="var(--card-border)" stroke-width="1"/>
+            <text x="36" y="252" font-family="Inter,sans-serif" font-size="16" fill="var(--text-primary)" font-weight="700">Recommendations</text>
+            <text x="36" y="276" font-family="Inter,sans-serif" font-size="12" fill="var(--text-secondary)">Focus on practicing basic rook and pawn endgames.</text>
+    
+            <defs><linearGradient id="fadeOut" x1="0" y1="0" x2="0" y2="1"><stop offset="60%" stop-color="transparent"/><stop offset="100%" stop-color="var(--bg-color)"/></linearGradient></defs>
+            <rect width="860" height="340" rx="12" fill="url(#fadeOut)"/>
+    
+        </svg>
+      </div>
+      
+      <div class="oh-ctas" style="margin-top: 32px; margin-bottom: 32px; justify-content: center;">
+        <button class="oh-cta oh-cta--primary" id="upload-pgn-btn-hero">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-btn-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <span class="oh-cta-body">
+            <strong>Import from Lichess</strong>
+            <span>Enter your username or upload a PGN file</span>
+          </span>
+        </button>
+        <button class="oh-cta oh-cta--secondary" id="load-demo-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-btn-icon"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          <span class="oh-cta-body">
+            <strong>Try Demo Data</strong>
+            <span>See how the dashboard works</span>
+          </span>
+        </button>
+      </div>
+    
+      <!-- Progressive Flow Steps -->
+      <div class="oh-steps" style="margin-top: 24px;">
+        <div class="oh-step">
+          <div class="oh-step-num">1</div>
+          <div class="oh-step-text"><strong>Export from Lichess</strong><br>Grab your games in PGN format.</div>
+        </div>
+        <div class="oh-step">
+          <div class="oh-step-num">2</div>
+          <div class="oh-step-text"><strong>Drop them here</strong><br>No account or signup needed.</div>
+        </div>
+        <div class="oh-step">
+          <div class="oh-step-num">3</div>
+          <div class="oh-step-text"><strong>Get instant insights</strong><br>Everything runs privately in your browser.</div>
         </div>
       </div>
+</section>
 
-<section class="empty-state" id="empty-state">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><line x1="9" y1="18" x2="15" y2="18"></line><line x1="10" y1="22" x2="14" y2="22"></line><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg>
-        <h2 class="empty-state-title">No Games Analyzed Yet</h2>
-        <p class="empty-state-text">Import your Lichess games to get personalised coaching insights and improvement targets.</p>
-        <div class="empty-state-actions">
-          <button class="btn-hero btn-hero--primary" id="upload-pgn-btn-hero"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-btn-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> Upload PGN</button>
-          <button class="btn-hero btn-hero--secondary" id="load-demo-btn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sidebar-btn-icon"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Try Demo Data</button>
-        </div>
-      </section>
-
-      <section class="dashboard hidden" id="dashboard">
+    <section class="dashboard hidden" id="dashboard">
         <!-- SECTION: Filters -->
               <!-- Active filter chips -->
       <div class="active-filter-bar hidden" id="active-filter-bar"></div>
@@ -180,7 +226,7 @@
         </div>
 
         <div class="confidence-legend">
-          <span style="font-weight:600">Confidence:</span>
+          <span style="font-weight:600">Confidence:<span class="tooltip" data-tip="Indicates statistical reliability based on sample size">?</span></span>
           <span class="confidence-legend-item"><span class="confidence-dot confidence-dot--high"></span> High (30+ games)</span>
           <span class="confidence-legend-item"><span class="confidence-dot confidence-dot--medium"></span> Medium (10–29 games)</span>
           <span class="confidence-legend-item"><span class="confidence-dot confidence-dot--low"></span> Low (&lt;10 games)</span>
