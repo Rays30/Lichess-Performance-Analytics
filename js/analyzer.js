@@ -9,7 +9,6 @@
  */
 
 const Analyzer = (function () {
-  const MIN_GAMES = 5;
 
   function calcWinRate(wins, total) {
     if (total === 0) return 0;
@@ -174,6 +173,9 @@ const Analyzer = (function () {
 
   function analyze(games) {
     if (!games || games.length === 0) return null;
+
+    // 0. Set dynamic min threshold
+    const minGamesThreshold = games.length < 25 ? 2 : 5;
 
     // 1. OVERALL
     const overall = { totalGames: 0, wins: 0, losses: 0, draws: 0, winRate: 0 };
@@ -406,13 +408,14 @@ const Analyzer = (function () {
     let bestTC = { name: 'N/A', rate: -1 }, worstTC = { name: 'N/A', rate: 101 };
     let highestVolTC = { name: 'N/A', count: -1 }, timeoutRiskTC = { name: 'N/A', count: -1 };
 
-    tcBuckets.forEach(b => {
+    Object.keys(timeControl).forEach(b => {
+      if (b === 'best' || b === 'worst' || b === 'highestVolume' || b === 'timeoutRisk') return;
       const tc = timeControl[b];
       tc.winRate = calcWinRate(tc.wins, tc.total);
       tc.avgMoves = tc.total > 0 ? Math.round(tc.movesTotal / tc.total) : 0;
       confidence.timeControl[b] = getConfidence(tc.total);
 
-      if (tc.total >= MIN_GAMES) {
+      if (tc.total >= minGamesThreshold) {
         if (tc.winRate > bestTC.rate) { bestTC.rate = tc.winRate; bestTC.name = b; }
         if (tc.winRate < worstTC.rate) { worstTC.rate = tc.winRate; worstTC.name = b; }
       }

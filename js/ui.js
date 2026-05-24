@@ -254,8 +254,8 @@ var UI = (function () {
     txt('val-total-games-sub', o.wins + 'W / ' + o.losses + 'L / ' + o.draws + 'D');
     txt('val-winrate', o.winRate + '%');
     txt('val-winrate-sub', o.wins + (o.wins === 1 ? ' win of ' : ' wins of ') + o.totalGames);
-    if (tc.best !== 'N/A' && tc[tc.best]) { txt('val-best-tc', tc.best); txt('val-best-tc-sub', tc[tc.best].winRate + '% win rate'); }
-    if (out.mostCommonLoss !== 'N/A') { txt('val-common-loss', capitalize(out.mostCommonLoss)); txt('val-common-loss-sub', out.losses[out.mostCommonLoss] ? out.losses[out.mostCommonLoss].pct + '% of losses' : ''); }
+    if (tc.best !== 'N/A' && tc[tc.best]) { txt('val-best-tc', tc.best); txt('val-best-tc-sub', tc[tc.best].winRate + '% win rate'); } else { txt('val-best-tc', 'N/A'); txt('val-best-tc-sub', 'Not enough data'); }
+    if (out.mostCommonLoss !== 'N/A') { txt('val-common-loss', capitalize(out.mostCommonLoss)); txt('val-common-loss-sub', out.losses[out.mostCommonLoss] ? out.losses[out.mostCommonLoss].pct + '% of losses' : ''); } else { txt('val-common-loss', 'N/A'); txt('val-common-loss-sub', 'Not enough data'); }
     renderOverviewDonut(a);
     renderOverviewTimeline(a);
     renderRecentGames(a);
@@ -277,10 +277,10 @@ var UI = (function () {
     }
 
     // === TIME CONTROL (time-control.html) ===
-    if (tc.best !== 'N/A' && tc[tc.best]) { txt('val-tc-best', tc.best); txt('val-tc-best-sub', tc[tc.best].winRate + '% win rate'); }
-    if (tc.highestVolume !== 'N/A' && tc[tc.highestVolume]) { txt('val-tc-most', tc.highestVolume); txt('val-tc-most-sub', tc[tc.highestVolume].total + (tc[tc.highestVolume].total === 1 ? ' game' : ' games')); }
-    if (tc.highestVolume !== 'N/A' && tc[tc.highestVolume]) { txt('val-tc-vol', tc[tc.highestVolume].total); txt('val-tc-vol-sub', tc.highestVolume + ' format'); }
-    if (tc.timeoutRisk !== 'N/A' && tc[tc.timeoutRisk]) { txt('val-tc-timeout', tc.timeoutRisk); txt('val-tc-timeout-sub', tc[tc.timeoutRisk].lossCauses.timeout + (tc[tc.timeoutRisk].lossCauses.timeout === 1 ? ' timeout loss' : ' timeout losses')); }
+    if (tc.best !== 'N/A' && tc[tc.best]) { txt('val-tc-best', tc.best); txt('val-tc-best-sub', tc[tc.best].winRate + '% win rate'); } else { txt('val-tc-best', 'N/A'); txt('val-tc-best-sub', 'Not enough data'); }
+    if (tc.highestVolume !== 'N/A' && tc[tc.highestVolume]) { txt('val-tc-most', tc.highestVolume); txt('val-tc-most-sub', tc[tc.highestVolume].total + (tc[tc.highestVolume].total === 1 ? ' game' : ' games')); } else { txt('val-tc-most', 'N/A'); txt('val-tc-most-sub', 'Not enough data'); }
+    if (tc.highestVolume !== 'N/A' && tc[tc.highestVolume]) { txt('val-tc-vol', tc[tc.highestVolume].total); txt('val-tc-vol-sub', tc.highestVolume + ' format'); } else { txt('val-tc-vol', 'N/A'); txt('val-tc-vol-sub', 'Not enough data'); }
+    if (tc.timeoutRisk !== 'N/A' && tc[tc.timeoutRisk]) { txt('val-tc-timeout', tc.timeoutRisk); txt('val-tc-timeout-sub', tc[tc.timeoutRisk].lossCauses.timeout + (tc[tc.timeoutRisk].lossCauses.timeout === 1 ? ' timeout loss' : ' timeout losses')); } else { txt('val-tc-timeout', 'N/A'); txt('val-tc-timeout-sub', 'Not enough data'); }
     if (document.getElementById('timecontrol-stats')) {
       renderTimeControlStats(tc, a.confidence.timeControl);
       renderTCLossCause(tc);
@@ -290,7 +290,8 @@ var UI = (function () {
 
     // === OPENINGS (openings.html) ===
     var ops = a.openings;
-    var qOps = ops.filter(function(x){return x.total>=5 && x.name!=='Unknown';});
+    var minGamesThreshold = a.overall.totalGames < 25 ? 2 : 5;
+    var qOps = ops.filter(function(x){return x.total>=minGamesThreshold && x.name!=='Unknown';});
     if (qOps.length > 0) { txt('val-best-opening', qOps[0].name); txt('val-best-opening-sub', qOps[0].winRate + '% over ' + qOps[0].total + (qOps[0].total === 1 ? ' game' : ' games')); }
     else { txt('val-best-opening', 'N/A'); txt('val-best-opening-sub', 'Not enough data'); }
     if (qOps.length > 1) { var wo=qOps[qOps.length-1]; txt('val-worst-opening', wo.name); txt('val-worst-opening-sub', wo.winRate + '% over ' + wo.total + (wo.total === 1 ? ' game' : ' games')); }

@@ -593,6 +593,12 @@
     var demoBtn = document.getElementById('load-demo-btn');
     if (demoBtn) demoBtn.addEventListener('click', handleLoadDemo);
 
+    var shareBtn = document.getElementById('share-dashboard-btn');
+    if (shareBtn) shareBtn.addEventListener('click', shareDashboard);
+
+    var exportCardBtn = document.getElementById('export-card-btn');
+    if (exportCardBtn) exportCardBtn.addEventListener('click', generateStatsCard);
+
     // Help Guide
     var helpFab = document.getElementById('help-fab');
     var helpModal = document.getElementById('help-modal');
@@ -705,6 +711,252 @@
         }
       });
     }
+  }
+
+
+  function shareDashboard() {
+    var un = Storage.getUsername();
+    if (!un) {
+      var inputVal = document.getElementById('username-input').value.trim();
+      un = inputVal ? inputVal : '';
+    }
+    if (!un) {
+      UI.showAlertModal('Error', 'Please enter a username first to generate a shareable link.');
+      return;
+    }
+    
+    var url = new URL(window.location.origin + window.location.pathname);
+    url.searchParams.set('user', un);
+    
+    navigator.clipboard.writeText(url.toString()).then(function() {
+      var feedback = document.getElementById('share-feedback');
+      if (feedback) {
+        feedback.classList.remove('hidden');
+        setTimeout(function() {
+          feedback.classList.add('hidden');
+        }, 2000);
+      }
+    }).catch(function() {
+      UI.showAlertModal('Error', 'Failed to copy link to clipboard.');
+    });
+  }
+
+  function generateStatsCard() {
+    if (!currentAnalysis || Storage.getGameCount() === 0) {
+      UI.showAlertModal('No Data', 'Please upload a PGN file or load a username first.');
+      return;
+    }
+    if (typeof html2canvas === 'undefined') {
+      UI.showAlertModal('Error', 'Export library not loaded yet. Please try again in a moment.');
+      return;
+    }
+
+    var un = Storage.getUsername() || 'Lichess Player';
+    var isDark = Storage.getTheme() === 'dark';
+    
+    var bg = isDark ? '#0f172a' : '#f8fafc';
+    var cardBg = isDark ? '#1e293b' : '#ffffff';
+    var textPrimary = isDark ? '#f8fafc' : '#0f172a';
+    var textMuted = isDark ? '#94a3b8' : '#64748b';
+    var primaryColor = '#3b82f6';
+    
+    var contextTitle = 'Chess Performance';
+    var stat1Label = 'TOTAL GAMES';
+    var stat1Value = currentAnalysis.overall.totalGames || 0;
+    var stat2Label = 'WIN RATE';
+    var stat2Value = (currentAnalysis.overall.winRate || 0) + '%';
+    
+    var btc = currentAnalysis.timeControl && currentAnalysis.timeControl.best ? currentAnalysis.timeControl.best : 'N/A';
+    var bestWin = currentAnalysis.streaks && currentAnalysis.streaks.streaksByColor ? Math.max(currentAnalysis.streaks.streaksByColor.white.longestWin, currentAnalysis.streaks.streaksByColor.black.longestWin) : 0;
+    
+    var bop = 'N/A';
+    var qOps = [];
+    if (currentAnalysis.openings && currentAnalysis.openings.length > 0) {
+      qOps = currentAnalysis.openings.filter(function(x){return x.total>=2 && x.name!=='Unknown';});
+      if (qOps.length > 0) bop = qOps[0].name;
+    }
+    
+    var footer1 = `<strong style="color: ${textMuted}; font-weight: 600;">BEST TIME CONTROL:</strong> <span style="font-weight: 600;">${btc}</span>`;
+    var footer2 = `<strong style="color: ${textMuted}; font-weight: 600;">BEST OPENING:</strong> <span style="font-weight: 600;">${bop.length > 20 ? bop.substring(0,20)+'...' : bop}</span>`;
+    
+    var insight = currentInsights && currentInsights.mainTarget ? currentInsights.mainTarget : 'Keep playing to identify patterns';
+    
+    var path = window.location.pathname.toLowerCase();
+    
+    if (path.includes('openings')) {
+      contextTitle = 'Opening Repertoire';
+      if (qOps.length > 0) {
+        stat1Label = 'TOP OPENING';
+        stat1Value = bop.length > 15 ? bop.substring(0,15)+'...' : bop;
+        stat2Label = 'WIN RATE';
+        stat2Value = qOps[0].winRate + '%';
+        footer1 = `<strong style="color: ${textMuted}; font-weight: 600;">GAMES PLAYED:</strong> <span style="font-weight: 600;">${qOps[0].total}</span>`;
+        footer2 = `<strong style="color: ${textMuted}; font-weight: 600;">W/L/D:</strong> <span style="font-weight: 600;">${qOps[0].wins}/${qOps[0].losses}/${qOps[0].draws}</span>`;
+      }
+      if (currentInsights && currentInsights.openings) insight = typeof currentInsights.openings === 'string' ? currentInsights.openings : (currentInsights.openings.text || 'Analyze more openings');
+    } 
+    else if (path.includes('time-control')) {
+      contextTitle = 'Time Control Stats';
+      stat1Label = 'BEST FORMAT';
+      stat1Value = btc;
+      stat2Label = 'WORST FORMAT';
+      stat2Value = currentAnalysis.timeControl && currentAnalysis.timeControl.worst ? currentAnalysis.timeControl.worst : 'N/A';
+      footer1 = `<strong style="color: ${textMuted}; font-weight: 600;">TOTAL GAMES:</strong> <span style="font-weight: 600;">${currentAnalysis.overall.totalGames||0}</span>`;
+      footer2 = `<strong style="color: ${textMuted}; font-weight: 600;">OVERALL WIN RATE:</strong> <span style="font-weight: 600;">${currentAnalysis.overall.winRate||0}%</span>`;
+      if (currentInsights && currentInsights.timeControl) insight = typeof currentInsights.timeControl === 'string' ? currentInsights.timeControl : (currentInsights.timeControl.text || 'Play more time controls');
+    }
+    else if (path.includes('trends')) {
+      contextTitle = 'Performance Trends';
+      var mGames = currentAnalysis.gamesByMonth || [];
+      var activeMonths = mGames.filter(function(m){ return m.total > 0; });
+      var bestMonth = { name: 'N/A', rate: -1 };
+      activeMonths.forEach(function(m) {
+         var r = Math.round((m.wins/m.total)*100);
+         if (r > bestMonth.rate) { bestMonth.rate = r; bestMonth.name = m.month; }
+      });
+      
+      stat1Label = 'BEST MONTH';
+      stat1Value = bestMonth.name !== 'N/A' ? bestMonth.name.substring(0, 3) : 'N/A';
+      stat2Label = 'MONTHLY WIN RATE';
+      stat2Value = bestMonth.rate !== -1 ? bestMonth.rate + '%' : 'N/A';
+      
+      footer1 = `<strong style="color: ${textMuted}; font-weight: 600;">ACTIVE MONTHS:</strong> <span style="font-weight: 600;">${activeMonths.length}</span>`;
+      footer2 = `<strong style="color: ${textMuted}; font-weight: 600;">OVERALL WIN RATE:</strong> <span style="font-weight: 600;">${currentAnalysis.overall.winRate||0}%</span>`;
+    }
+    else if (path.includes('streaks')) {
+      contextTitle = 'Winning Streaks';
+      var worstLoss = currentAnalysis.streaks && currentAnalysis.streaks.streaksByColor ? Math.max(currentAnalysis.streaks.streaksByColor.white.longestLoss, currentAnalysis.streaks.streaksByColor.black.longestLoss) : 0;
+      
+      stat1Label = 'LONGEST WIN STREAK';
+      stat1Value = bestWin + ' Games';
+      stat2Label = 'LONGEST LOSS STREAK';
+      stat2Value = worstLoss + ' Games';
+      
+      footer1 = `<strong style="color: ${textMuted}; font-weight: 600;">GAMES ANALYZED:</strong> <span style="font-weight: 600;">${currentAnalysis.overall.totalGames||0}</span>`;
+      footer2 = '';
+      insight = 'Consistency is key for streaks';
+    }
+    else if (path.includes('outcomes')) {
+      contextTitle = 'Game Outcomes';
+      var cmWins = currentAnalysis.outcomes && currentAnalysis.outcomes.wins && currentAnalysis.outcomes.wins.checkmate ? currentAnalysis.outcomes.wins.checkmate.count : 0;
+      var toLosses = currentAnalysis.outcomes && currentAnalysis.outcomes.losses && currentAnalysis.outcomes.losses.timeout ? currentAnalysis.outcomes.losses.timeout.count : 0;
+      
+      stat1Label = 'CHECKMATES';
+      stat1Value = cmWins;
+      stat2Label = 'TIMEOUT LOSSES';
+      stat2Value = toLosses;
+      
+      footer1 = `<strong style="color: ${textMuted}; font-weight: 600;">TOTAL WINS:</strong> <span style="font-weight: 600;">${currentAnalysis.overall.wins||0}</span>`;
+      footer2 = `<strong style="color: ${textMuted}; font-weight: 600;">TOTAL LOSSES:</strong> <span style="font-weight: 600;">${currentAnalysis.overall.losses||0}</span>`;
+      if (currentInsights && currentInsights.outcomes) insight = typeof currentInsights.outcomes === 'string' ? currentInsights.outcomes : (currentInsights.outcomes.text || 'Focus on time management');
+    }
+    else if (path.includes('game-length')) {
+      contextTitle = 'Game Length Patterns';
+      stat1Label = 'AVG WIN LENGTH';
+      stat1Value = (currentAnalysis.gameLength && currentAnalysis.gameLength.avgWinMoves ? currentAnalysis.gameLength.avgWinMoves : 0) + ' Moves';
+      stat2Label = 'AVG LOSS LENGTH';
+      stat2Value = (currentAnalysis.gameLength && currentAnalysis.gameLength.avgLossMoves ? currentAnalysis.gameLength.avgLossMoves : 0) + ' Moves';
+      footer1 = '';
+      footer2 = '';
+      if (currentInsights && currentInsights.gameLength) insight = typeof currentInsights.gameLength === 'string' ? currentInsights.gameLength : (currentInsights.gameLength.text || 'Keep an eye on game length');
+    }
+    else if (path.includes('game-phase')) {
+      contextTitle = 'Game Phase Mastery';
+      var phases = currentAnalysis.gamePhase ? [currentAnalysis.gamePhase.opening, currentAnalysis.gamePhase.middlegame, currentAnalysis.gamePhase.endgame] : [];
+      var bestPhase = { name: 'Opening', rate: phases.length ? phases[0].winRate : 0 };
+      if (phases.length && phases[1] && phases[1].winRate > bestPhase.rate) bestPhase = { name: 'Middlegame', rate: phases[1].winRate };
+      if (phases.length && phases[2] && phases[2].winRate > bestPhase.rate) bestPhase = { name: 'Endgame', rate: phases[2].winRate };
+      stat1Label = 'STRONGEST PHASE';
+      stat1Value = bestPhase.rate > 0 ? bestPhase.name : 'N/A';
+      stat2Label = 'PHASE WIN RATE';
+      stat2Value = bestPhase.rate > 0 ? bestPhase.rate + '%' : 'N/A';
+      footer1 = '';
+      footer2 = '';
+      if (currentInsights && currentInsights.gamePhase) insight = typeof currentInsights.gamePhase === 'string' ? currentInsights.gamePhase : (currentInsights.gamePhase.text || 'Study your weak phases');
+    }
+    
+    var card = document.createElement('div');
+    card.style.position = 'absolute';
+    card.style.left = '-9999px';
+    card.style.width = '700px';
+    card.style.height = '480px';
+    card.style.backgroundColor = bg;
+    card.style.padding = '32px';
+    card.style.fontFamily = 'Inter, sans-serif';
+    card.style.color = textPrimary;
+    card.style.boxSizing = 'border-box';
+    card.style.display = 'flex';
+    card.style.flexDirection = 'column';
+    card.style.justifyContent = 'space-between';
+    card.style.borderRadius = '16px';
+    
+    card.innerHTML = `
+      <div style="flex: 1;">
+        <div style="font-size: 14px; font-weight: 600; color: ${primaryColor}; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">${contextTitle}</div>
+        <div style="font-size: 36px; font-weight: 700; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+          <span>${un}</span>
+          <span style="font-size: 14px; font-weight: 600; color: ${isDark ? '#38bdf8' : '#0284c7'}; background: ${isDark ? 'rgba(56, 189, 248, 0.1)' : '#e0f2fe'}; padding: 6px 16px; border-radius: 20px; border: 1px solid ${isDark ? 'rgba(56, 189, 248, 0.2)' : '#bae6fd'};">Pro Player Profile</span>
+        </div>
+        
+        <div style="display: flex; gap: 16px; margin-bottom: 28px;">
+          <div style="background: ${cardBg}; padding: 16px 20px; border-radius: 8px; flex: 1; border: 1px solid ${isDark ? '#334155' : '#e2e8f0'}; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+            <div style="font-size: 12px; color: ${textMuted}; font-weight: 600; margin-bottom: 4px;">${stat1Label}</div>
+            <div style="font-size: 26px; font-weight: 700;">${stat1Value}</div>
+          </div>
+          <div style="background: ${cardBg}; padding: 16px 20px; border-radius: 8px; flex: 1; border: 1px solid ${isDark ? '#334155' : '#e2e8f0'}; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+            <div style="font-size: 12px; color: ${textMuted}; font-weight: 600; margin-bottom: 4px;">${stat2Label}</div>
+            <div style="font-size: 26px; font-weight: 700; color: ${primaryColor};">${stat2Value}</div>
+          </div>
+        </div>
+        
+        <div style="font-size: 11px; font-weight: 600; color: ${textMuted}; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">Career Highlights</div>
+        <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+          <div style="background: ${isDark ? 'rgba(59, 130, 246, 0.1)' : '#eff6ff'}; padding: 16px 12px; border-radius: 8px; flex: 1; border: 1px solid ${isDark ? 'rgba(59, 130, 246, 0.2)' : '#bfdbfe'}; text-align: center;">
+            <div style="font-size: 10px; color: ${primaryColor}; font-weight: 700; margin-bottom: 6px; text-transform: uppercase;">Win Rate</div>
+            <div style="font-size: 20px; font-weight: 800; color: ${textPrimary};">${(currentAnalysis.overall.winRate || 0)}%</div>
+          </div>
+          <div style="background: ${cardBg}; padding: 16px 12px; border-radius: 8px; flex: 1; border: 1px solid ${isDark ? '#334155' : '#e2e8f0'}; text-align: center;">
+            <div style="font-size: 10px; color: ${textMuted}; font-weight: 700; margin-bottom: 6px; text-transform: uppercase;">Best Format</div>
+            <div style="font-size: 20px; font-weight: 800; color: ${textPrimary};">${btc}</div>
+          </div>
+          <div style="background: ${cardBg}; padding: 16px 12px; border-radius: 8px; flex: 1; border: 1px solid ${isDark ? '#334155' : '#e2e8f0'}; text-align: center; overflow: hidden;">
+            <div style="font-size: 10px; color: ${textMuted}; font-weight: 700; margin-bottom: 6px; text-transform: uppercase;">Top Opening</div>
+            <div style="font-size: 18px; font-weight: 800; color: ${textPrimary}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${bop.length > 12 ? bop.substring(0, 12) + '...' : bop}</div>
+          </div>
+          <div style="background: ${cardBg}; padding: 16px 12px; border-radius: 8px; flex: 1; border: 1px solid ${isDark ? '#334155' : '#e2e8f0'}; text-align: center;">
+            <div style="font-size: 10px; color: ${textMuted}; font-weight: 700; margin-bottom: 6px; text-transform: uppercase;">Best Streak</div>
+            <div style="font-size: 20px; font-weight: 800; color: ${textPrimary};">${bestWin} <span style="font-size:12px; font-weight:600; color:${textMuted};">W</span></div>
+          </div>
+        </div>
+      </div>
+      
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 12px; border-top: 1px solid ${isDark ? '#334155' : '#e2e8f0'}; padding-top: 16px;">
+        <div style="flex: 1; padding-right: 20px;">
+          <div style="font-size: 11px; font-weight: 600; color: ${primaryColor}; text-transform: uppercase; margin-bottom: 4px;">KEY INSIGHT</div>
+          <div style="font-size: 15px; font-weight: 500; line-height: 1.4;">${insight}</div>
+        </div>
+        <div style="font-size: 14px; color: ${textMuted}; font-weight: 700; text-align: right; min-width: 140px;">
+          Lichess Analytics
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(card);
+    
+    html2canvas(card, {
+      scale: 2,
+      backgroundColor: bg,
+      logging: false
+    }).then(function(canvas) {
+      var link = document.createElement('a');
+      link.download = 'lichess-' + contextTitle.toLowerCase().replace(/\s+/g, '-') + '-' + un.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      document.body.removeChild(card);
+    }).catch(function(err) {
+      document.body.removeChild(card);
+      UI.showAlertModal('Error', 'Failed to generate card: ' + err);
+    });
   }
 
   // --- Run ---
