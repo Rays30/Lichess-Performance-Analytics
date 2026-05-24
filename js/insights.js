@@ -21,6 +21,7 @@ var Insights = (function () {
       mostReliableOpening: null, mainTarget: null
     };
     if (!analysis) return empty;
+    MIN_GAMES = analysis.overall && analysis.overall.totalGames < 25 ? 2 : 5;
 
     var result = {
       overall:     buildOverall(analysis.overall),
@@ -90,16 +91,16 @@ var Insights = (function () {
     var lines = [];
     if (tc.best && tc.best !== 'N/A') {
       var bs = tc[tc.best];
-      lines.push('Best format: ' + tc.best + ' at ' + bs.winRate + '% (' + bs.total + ' games).');
+      lines.push('Best format: ' + tc.best + ' at ' + bs.winRate + '% (' + bs.total + (bs.total === 1 ? ' game' : ' games') + ').');
     }
     if (tc.worst && tc.worst !== 'N/A' && tc.worst !== tc.best) {
       var ws = tc[tc.worst];
-      lines.push('Weakest: ' + tc.worst + ' at ' + ws.winRate + '% (' + ws.total + ' games).');
+      lines.push('Weakest: ' + tc.worst + ' at ' + ws.winRate + '% (' + ws.total + (ws.total === 1 ? ' game' : ' games') + ').');
     }
     if (tc.timeoutRisk && tc.timeoutRisk !== 'N/A') {
       var tr = tc[tc.timeoutRisk];
       if (tr && tr.lossCauses && tr.lossCauses.timeout > 2) {
-        lines.push('Most timeout losses in ' + tc.timeoutRisk + ' (' + tr.lossCauses.timeout + ' games).');
+        lines.push('Most timeout losses in ' + tc.timeoutRisk + ' (' + tr.lossCauses.timeout + (tr.lossCauses.timeout === 1 ? ' game' : ' games') + ').');
       }
     }
     return lines.length > 0 ? lines.join(' ') : null;
@@ -111,7 +112,7 @@ var Insights = (function () {
     if (out.mostCommonLoss && out.mostCommonLoss !== 'N/A') {
       var ld = out.losses[out.mostCommonLoss];
       if (ld && ld.count > 0) {
-        lines.push('Most common loss: ' + out.mostCommonLoss + ' (' + ld.count + ' times, ' + ld.pct + '% of losses).');
+        lines.push('Most common loss: ' + out.mostCommonLoss + ' (' + ld.count + (ld.count === 1 ? ' time, ' : ' times, ') + ld.pct + '% of losses).');
         if (out.mostCommonLoss === 'timeout') lines.push('Time pressure is your biggest weakness — try slower formats or practice time management.');
         else if (out.mostCommonLoss === 'resignation') lines.push('You tend to resign — fighting on sometimes reveals opponent mistakes.');
         else if (out.mostCommonLoss === 'checkmate') lines.push('Focus on defensive tactics and king safety.');
@@ -120,7 +121,7 @@ var Insights = (function () {
     if (out.mostCommonWin && out.mostCommonWin !== 'N/A') {
       var wd = out.wins[out.mostCommonWin];
       if (wd && wd.count > 0) {
-        lines.push('Most common win: ' + out.mostCommonWin + ' (' + wd.count + ' times, ' + wd.pct + '% of wins).');
+        lines.push('Most common win: ' + out.mostCommonWin + ' (' + wd.count + (wd.count === 1 ? ' time, ' : ' times, ') + wd.pct + '% of wins).');
       }
     }
     return lines.length > 0 ? lines.join(' ') : null;
@@ -136,10 +137,10 @@ var Insights = (function () {
 
     var lines = [];
     var best = qualified[0];
-    lines.push('Best opening: ' + best.name + ' (' + best.winRate + '% over ' + best.total + ' games).');
+    lines.push('Best opening: ' + best.name + ' (' + best.winRate + '% over ' + best.total + (best.total === 1 ? ' game' : ' games') + ').');
     if (qualified.length > 1) {
       var worst = qualified[qualified.length - 1];
-      lines.push('Weakest: ' + worst.name + ' (' + worst.winRate + '% over ' + worst.total + ' games).');
+      lines.push('Weakest: ' + worst.name + ' (' + worst.winRate + '% over ' + worst.total + (worst.total === 1 ? ' game' : ' games') + ').');
       if (worst.winRate < 40) lines.push('Consider studying ' + worst.name + ' or switching to a different line.');
     }
     return lines.join(' ');
@@ -168,7 +169,7 @@ var Insights = (function () {
       var phase = gp.mostCommonLossPhase;
       var phaseData = gp[phase];
       if (phaseData && phaseData.losses > 0) {
-        lines.push('Most losses occur in the ' + phase + ' (' + phaseData.losses + ' games).');
+        lines.push('Most losses occur in the ' + phase + ' (' + phaseData.losses + (phaseData.losses === 1 ? ' game' : ' games') + ').');
         if (phase === 'middlegame') lines.push('Your openings are solid — focus on middlegame tactical vision.');
         else if (phase === 'opening') lines.push("You're losing games early — focus on opening principles.");
         else if (phase === 'endgame') lines.push('You reach endgames but struggle to convert — endgame study recommended.');
@@ -248,7 +249,14 @@ var Insights = (function () {
     if (analysis.timeControl.worst !== 'N/A') weakAreas.push({ area: analysis.timeControl.worst + ' games', rate: analysis.timeControl[analysis.timeControl.worst].winRate });
     if (qualifiedOps.length > 1) { var w = qualifiedOps[qualifiedOps.length - 1]; weakAreas.push({ area: w.name, rate: w.winRate }); }
     weakAreas.sort(function (a, b) { return a.rate - b.rate; });
-    if (weakAreas.length > 0) result.weakestArea = { label: weakAreas[0].area, rate: weakAreas[0].rate };
+    var weakest = null;
+    for (var i = 0; i < weakAreas.length; i++) {
+      if (!result.strongestArea || weakAreas[i].area !== result.strongestArea.label) {
+        weakest = weakAreas[i];
+        break;
+      }
+    }
+    if (weakest) result.weakestArea = { label: weakest.area, rate: weakest.rate };
 
     // Most reliable opening
     if (qualifiedOps.length > 0) {
@@ -267,11 +275,11 @@ var Insights = (function () {
 
     // Recommendations table
     var recs = [];
-    if (analysis.outcomes.mostCommonLoss === 'timeout') recs.push({ issue: 'Frequent timeouts', evidence: analysis.outcomes.losses.timeout.count + ' timeout losses (' + analysis.outcomes.losses.timeout.pct + '%)', focus: 'Practice time management or play longer formats' });
+    if (analysis.outcomes.mostCommonLoss === 'timeout') recs.push({ issue: 'Frequent timeouts', evidence: analysis.outcomes.losses.timeout.count + (analysis.outcomes.losses.timeout.count === 1 ? ' timeout loss' : ' timeout losses') + ' (' + analysis.outcomes.losses.timeout.pct + '%)', focus: 'Practice time management or play longer formats' });
     if (analysis.gamePhase.mostCommonLossPhase !== 'N/A') {
       var p = analysis.gamePhase.mostCommonLossPhase;
       var pd = analysis.gamePhase[p];
-      recs.push({ issue: capitalize(p) + ' weakness', evidence: pd.losses + ' losses in ' + p + ' phase', focus: capitalize(p) + ' training exercises' });
+      recs.push({ issue: capitalize(p) + ' weakness', evidence: pd.losses + (pd.losses === 1 ? ' loss' : ' losses') + ' in ' + p + ' phase', focus: capitalize(p) + ' training exercises' });
     }
     if (analysis.color.bestColor !== 'N/A' && analysis.color.differential > 5) {
       var wc = analysis.color.bestColor === 'White' ? 'Black' : 'White';
@@ -279,7 +287,7 @@ var Insights = (function () {
     }
     if (qualifiedOps.length > 1) {
       var wo = qualifiedOps[qualifiedOps.length - 1];
-      if (wo.winRate < 40) recs.push({ issue: 'Weak opening: ' + wo.name, evidence: wo.winRate + '% over ' + wo.total + ' games', focus: 'Study or switch away from ' + wo.name });
+      if (wo.winRate < 40) recs.push({ issue: 'Weak opening: ' + wo.name, evidence: wo.winRate + '% over ' + wo.total + (wo.total === 1 ? ' game' : ' games'), focus: 'Study or switch away from ' + wo.name });
     }
     if (analysis.gameLength.avgLossMoves > 0 && analysis.gameLength.avgLossMoves < 20) recs.push({ issue: 'Early collapses', evidence: 'Avg loss in ' + analysis.gameLength.avgLossMoves + ' moves', focus: 'Focus on opening traps and early tactics' });
     result.recommendations = recs;

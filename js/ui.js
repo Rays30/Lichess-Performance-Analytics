@@ -75,7 +75,7 @@ var UI = (function () {
     loss:  function(){ return lcColor('--color-loss')  || '#E53935'; },
     draw:  function(){ return lcColor('--color-draw')  || '#FFB300'; },
     blue:  function(){ return lcColor('--lc-blue')     || '#3692E7'; },
-    biscuit: function(){ return lcColor('--lc-biscuit')|| '#3692E7'; },
+    biscuit: function(){ return lcColor('--lc-biscuit')|| '#F0D9B5'; },
     gray:  function(){ return '#71717A'; },
   };
 
@@ -253,7 +253,7 @@ var UI = (function () {
     txt('val-total-games', o.totalGames);
     txt('val-total-games-sub', o.wins + 'W / ' + o.losses + 'L / ' + o.draws + 'D');
     txt('val-winrate', o.winRate + '%');
-    txt('val-winrate-sub', o.wins + ' wins of ' + o.totalGames);
+    txt('val-winrate-sub', o.wins + (o.wins === 1 ? ' win of ' : ' wins of ') + o.totalGames);
     if (tc.best !== 'N/A' && tc[tc.best]) { txt('val-best-tc', tc.best); txt('val-best-tc-sub', tc[tc.best].winRate + '% win rate'); }
     if (out.mostCommonLoss !== 'N/A') { txt('val-common-loss', capitalize(out.mostCommonLoss)); txt('val-common-loss-sub', out.losses[out.mostCommonLoss] ? out.losses[out.mostCommonLoss].pct + '% of losses' : ''); }
     renderOverviewDonut(a);
@@ -278,9 +278,9 @@ var UI = (function () {
 
     // === TIME CONTROL (time-control.html) ===
     if (tc.best !== 'N/A' && tc[tc.best]) { txt('val-tc-best', tc.best); txt('val-tc-best-sub', tc[tc.best].winRate + '% win rate'); }
-    if (tc.highestVolume !== 'N/A' && tc[tc.highestVolume]) { txt('val-tc-most', tc.highestVolume); txt('val-tc-most-sub', tc[tc.highestVolume].total + ' games'); }
+    if (tc.highestVolume !== 'N/A' && tc[tc.highestVolume]) { txt('val-tc-most', tc.highestVolume); txt('val-tc-most-sub', tc[tc.highestVolume].total + (tc[tc.highestVolume].total === 1 ? ' game' : ' games')); }
     if (tc.highestVolume !== 'N/A' && tc[tc.highestVolume]) { txt('val-tc-vol', tc[tc.highestVolume].total); txt('val-tc-vol-sub', tc.highestVolume + ' format'); }
-    if (tc.timeoutRisk !== 'N/A' && tc[tc.timeoutRisk]) { txt('val-tc-timeout', tc.timeoutRisk); txt('val-tc-timeout-sub', tc[tc.timeoutRisk].lossCauses.timeout + ' timeout losses'); }
+    if (tc.timeoutRisk !== 'N/A' && tc[tc.timeoutRisk]) { txt('val-tc-timeout', tc.timeoutRisk); txt('val-tc-timeout-sub', tc[tc.timeoutRisk].lossCauses.timeout + (tc[tc.timeoutRisk].lossCauses.timeout === 1 ? ' timeout loss' : ' timeout losses')); }
     if (document.getElementById('timecontrol-stats')) {
       renderTimeControlStats(tc, a.confidence.timeControl);
       renderTCLossCause(tc);
@@ -291,9 +291,12 @@ var UI = (function () {
     // === OPENINGS (openings.html) ===
     var ops = a.openings;
     var qOps = ops.filter(function(x){return x.total>=5 && x.name!=='Unknown';});
-    if (qOps.length > 0) { txt('val-best-opening', qOps[0].name); txt('val-best-opening-sub', qOps[0].winRate + '% over ' + qOps[0].total + ' games'); }
-    if (qOps.length > 1) { var wo=qOps[qOps.length-1]; txt('val-worst-opening', wo.name); txt('val-worst-opening-sub', wo.winRate + '% over ' + wo.total + ' games'); }
-    if (a.mostPlayedOpening) { txt('val-most-played-op', a.mostPlayedOpening.name); txt('val-most-played-op-sub', a.mostPlayedOpening.total + ' games'); }
+    if (qOps.length > 0) { txt('val-best-opening', qOps[0].name); txt('val-best-opening-sub', qOps[0].winRate + '% over ' + qOps[0].total + (qOps[0].total === 1 ? ' game' : ' games')); }
+    else { txt('val-best-opening', 'N/A'); txt('val-best-opening-sub', 'Not enough data'); }
+    if (qOps.length > 1) { var wo=qOps[qOps.length-1]; txt('val-worst-opening', wo.name); txt('val-worst-opening-sub', wo.winRate + '% over ' + wo.total + (wo.total === 1 ? ' game' : ' games')); }
+    else { txt('val-worst-opening', 'N/A'); txt('val-worst-opening-sub', 'Not enough data'); }
+    if (a.mostPlayedOpening) { txt('val-most-played-op', a.mostPlayedOpening.name); txt('val-most-played-op-sub', a.mostPlayedOpening.total + (a.mostPlayedOpening.total === 1 ? ' game' : ' games')); }
+    else { txt('val-most-played-op', 'N/A'); txt('val-most-played-op-sub', 'Not enough data'); }
     txt('val-op-diversity', a.openingDiversity);
     if (document.getElementById('opening-stats')) {
       renderOpeningCharts(qOps);
@@ -304,10 +307,11 @@ var UI = (function () {
     // === OUTCOMES (outcomes.html) ===
     if (out.mostCommonWin !== 'N/A') { txt('val-common-win', capitalize(out.mostCommonWin)); txt('val-common-win-sub', out.wins[out.mostCommonWin] ? out.wins[out.mostCommonWin].pct + '% of wins' : ''); }
     var toPct = out.losses.timeout ? out.losses.timeout.pct : 0;
-    txt('val-timeout-pct', toPct + '%'); txt('val-timeout-pct-sub', (out.losses.timeout?out.losses.timeout.count:0) + ' timeout losses');
+    var toCount = out.losses.timeout ? out.losses.timeout.count : 0;
+    txt('val-timeout-pct', toPct + '%'); txt('val-timeout-pct-sub', toCount + (toCount === 1 ? ' timeout loss' : ' timeout losses'));
     if (out.mostCommonLoss !== 'N/A') { txt('val-common-loss-out', capitalize(out.mostCommonLoss)); txt('val-common-loss-out-sub', out.losses[out.mostCommonLoss] ? out.losses[out.mostCommonLoss].pct + '% of losses' : ''); }
     var drawR = o.totalGames > 0 ? Math.round((o.draws/o.totalGames)*1000)/10 : 0;
-    txt('val-draw-rate', drawR + '%'); txt('val-draw-rate-sub', o.draws + ' draws total');
+    txt('val-draw-rate', drawR + '%'); txt('val-draw-rate-sub', o.draws + (o.draws === 1 ? ' draw total' : ' draws total'));
     if (document.getElementById('outcome-stats')) {
       renderOutcomeStats(out);
       renderOutcomeLossDonut(out);
@@ -329,9 +333,10 @@ var UI = (function () {
     }
 
     // === GAME PHASE (game-phase.html) ===
-    txt('val-opening-pct', gp.opening.pct + '%'); txt('val-opening-pct-sub', gp.opening.count + ' of ' + (gp.opening.count+gp.middlegame.count+gp.endgame.count) + ' games');
-    txt('val-mid-pct', gp.middlegame.pct + '%'); txt('val-mid-pct-sub', gp.middlegame.count + ' of ' + (gp.opening.count+gp.middlegame.count+gp.endgame.count) + ' games');
-    txt('val-end-pct', gp.endgame.pct + '%'); txt('val-end-pct-sub', gp.endgame.count + ' of ' + (gp.opening.count+gp.middlegame.count+gp.endgame.count) + ' games');
+    var phaseTotal = gp.opening.count+gp.middlegame.count+gp.endgame.count;
+    txt('val-opening-pct', gp.opening.pct + '%'); txt('val-opening-pct-sub', gp.opening.count + ' of ' + phaseTotal + (phaseTotal === 1 ? ' game' : ' games'));
+    txt('val-mid-pct', gp.middlegame.pct + '%'); txt('val-mid-pct-sub', gp.middlegame.count + ' of ' + phaseTotal + (phaseTotal === 1 ? ' game' : ' games'));
+    txt('val-end-pct', gp.endgame.pct + '%'); txt('val-end-pct-sub', gp.endgame.count + ' of ' + phaseTotal + (phaseTotal === 1 ? ' game' : ' games'));
     txt('val-weakest-phase', gp.mostCommonLossPhase !== 'N/A' ? capitalize(gp.mostCommonLossPhase) : 'N/A');
     if (document.getElementById('gamephase-stats')) {
       renderGamePhaseStats(gp);
@@ -342,8 +347,11 @@ var UI = (function () {
 
     // === INSIGHTS (insights.html) ===
     if (insightsSet.strongestArea) { txt('val-strongest', insightsSet.strongestArea.label); txt('val-strongest-sub', insightsSet.strongestArea.rate + '% win rate'); }
+    else { txt('val-strongest', 'N/A'); txt('val-strongest-sub', 'Not enough data'); }
     if (insightsSet.weakestArea) { txt('val-weakest', insightsSet.weakestArea.label); txt('val-weakest-sub', insightsSet.weakestArea.rate + '% win rate'); }
-    if (insightsSet.mostReliableOpening) { txt('val-reliable-op', insightsSet.mostReliableOpening.label); txt('val-reliable-op-sub', insightsSet.mostReliableOpening.rate + '% over ' + insightsSet.mostReliableOpening.games + ' games'); }
+    else { txt('val-weakest', 'N/A'); txt('val-weakest-sub', 'Not enough data'); }
+    if (insightsSet.mostReliableOpening) { txt('val-reliable-op', insightsSet.mostReliableOpening.label); txt('val-reliable-op-sub', insightsSet.mostReliableOpening.rate + '% over ' + insightsSet.mostReliableOpening.games + (insightsSet.mostReliableOpening.games === 1 ? ' game' : ' games')); }
+    else { txt('val-reliable-op', 'N/A'); txt('val-reliable-op-sub', 'Not enough data'); }
     txt('val-main-target', insightsSet.mainTarget || 'Keep playing');
     if (document.getElementById('insights-list')) {
       renderKeyInsights(insightsSet);
@@ -629,7 +637,7 @@ var UI = (function () {
     html += '<div class="bar-row">';
     html += '<span class="bar-label">Wins</span>';
     html += '<div class="bar-track"><div class="bar-fill bar-fill--win" style="width: ' + winPct + '%;"></div></div>';
-    html += '<span class="bar-value">' + gl.avgWinMoves + ' m</span>';
+    html += '<span class="bar-value" style="flex:0 0 60px;">' + gl.avgWinMoves + ' m</span>';
     html += '</div>';
 
     // Loss moves
@@ -637,7 +645,7 @@ var UI = (function () {
     html += '<div class="bar-row">';
     html += '<span class="bar-label">Losses</span>';
     html += '<div class="bar-track"><div class="bar-fill bar-fill--loss" style="width: ' + lossPct + '%;"></div></div>';
-    html += '<span class="bar-value">' + gl.avgLossMoves + ' m</span>';
+    html += '<span class="bar-value" style="flex:0 0 60px;">' + gl.avgLossMoves + ' m</span>';
     html += '</div>';
 
     html += '</div>';
@@ -801,6 +809,15 @@ var UI = (function () {
     var el = document.getElementById('tc-loss-cause'); if (!el) return;
     var buckets = ['Bullet','Blitz','Rapid','Classical'];
     var html = '<div class="bar-chart">';
+    
+    // Legend
+    html += '<div style="display:flex; gap:12px; margin-bottom:16px; font-size:var(--font-xs); flex-wrap:wrap;">';
+    html += '<div style="display:flex; align-items:center;"><span style="width:10px;height:10px;border-radius:2px;background:'+LC.blue()+';margin-right:6px;"></span>Timeout</div>';
+    html += '<div style="display:flex; align-items:center;"><span style="width:10px;height:10px;border-radius:2px;background:'+LC.loss()+';margin-right:6px;"></span>Checkmate</div>';
+    html += '<div style="display:flex; align-items:center;"><span style="width:10px;height:10px;border-radius:2px;background:'+LC.draw()+';margin-right:6px;"></span>Resignation</div>';
+    html += '<div style="display:flex; align-items:center;"><span style="width:10px;height:10px;border-radius:2px;background:'+LC.gray()+';margin-right:6px;"></span>Other</div>';
+    html += '</div>';
+
     buckets.forEach(function(b){
       var d = tc[b]; if (!d || d.total === 0) return;
       var lc = d.lossCauses, tl = lc.checkmate+lc.resignation+lc.timeout+lc.other;
@@ -1197,7 +1214,7 @@ var UI = (function () {
     initChart('trend-winrate-chart', {
       type: 'line',
       data: { labels: labels, datasets: [{ label: 'Win Rate (%)', data: gbm.map(function(m){return m.winRate;}), borderColor: wC, backgroundColor: wBg, fill: true, tension: 0.1 }] },
-      options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
+      options: { responsive: true, maintainAspectRatio: false, layout: { padding: { right: 20 } }, scales: { y: { min: 0, max: 100 }, x: { ticks: { maxRotation: 45, minRotation: 45 } } } }
     });
 
     var hasElo = gbm.some(function(m){ return m.avgElo !== null; });
@@ -1386,7 +1403,7 @@ var UI = (function () {
           responsive: true, maintainAspectRatio: false,
           plugins: { legend: { display: true } },
           scales: {
-            x: { title: { display: true, text: 'Streak Length (Games)' } },
+            x: { title: { display: true, text: 'Streak Length (Games)' }, ticks: { display: true, autoSkip: false } },
             y: { title: { display: true, text: 'Number of Streaks' }, beginAtZero: true, ticks: { stepSize: 1 } }
           }
         }
