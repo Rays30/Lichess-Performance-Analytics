@@ -198,6 +198,7 @@ If deploying to a static host, no environment configuration is needed.
 | Module | State | Notes |
 |--------|-------|-------|
 | Streak detection | ✅ DONE | `streaks.html` with filters, charts, tables, insights |
+| Shareability / Export | ✅ DONE | Export PNG Trading Cards, `?user=` URLs, adaptive thresholds |
 | Day-of-week analysis | NOT STARTED | |
 | Opponent rating bands | NOT STARTED | |
 

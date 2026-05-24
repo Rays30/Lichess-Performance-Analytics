@@ -22,6 +22,7 @@ This isn't a to-do app. It's a data pipeline that runs in your browser:
 - **Cross-category correlations** — Discovers complex multi-dimensional insights (e.g. "You lose significantly more games on time in Bullet when playing Black vs White")
 - **Insight generation** — Produces human-readable coaching statements like *"You resign too early — fighting on sometimes reveals opponent mistakes"*
 - **Confidence thresholds** — Every metric is tagged High / Medium / Low based on sample size. Small samples get flagged, not hidden
+- **Shareability & Export** — Generates cinematic "Pro Player Profile" PNG trading cards and supports deep-linking via URL parameters (`?user=USERNAME`) so players can easily share their dashboards.
 
 ## How to Use It
 
@@ -36,6 +37,7 @@ This isn't a to-do app. It's a data pipeline that runs in your browser:
 |-------|--------|
 | Frontend | HTML, CSS (Zinc Design System), Vanilla JS |
 | Visualizations | Chart.js (via CDN) |
+| Image Export | html2canvas (via CDN) |
 | Storage | localStorage |
 | Backend | None |
 

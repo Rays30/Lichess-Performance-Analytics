@@ -787,7 +787,7 @@
       contextTitle = 'Opening Repertoire';
       if (qOps.length > 0) {
         stat1Label = 'TOP OPENING';
-        stat1Value = bop.length > 15 ? bop.substring(0,15)+'...' : bop;
+        stat1Value = bop;
         stat2Label = 'WIN RATE';
         stat2Value = qOps[0].winRate + '%';
         footer1 = `<strong style="color: ${textMuted}; font-weight: 600;">GAMES PLAYED:</strong> <span style="font-weight: 600;">${qOps[0].total}</span>`;
@@ -815,13 +815,24 @@
          if (r > bestMonth.rate) { bestMonth.rate = r; bestMonth.name = m.month; }
       });
       
+      var monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      var formattedMonth = 'N/A';
+      if (bestMonth.name !== 'N/A' && bestMonth.name.indexOf('-') > -1) {
+          var parts = bestMonth.name.split('-');
+          var mIdx = parseInt(parts[1], 10) - 1;
+          if (mIdx >= 0 && mIdx < 12) formattedMonth = monthNames[mIdx] + ' ' + parts[0];
+          else formattedMonth = bestMonth.name;
+      } else {
+          formattedMonth = bestMonth.name;
+      }
       stat1Label = 'BEST MONTH';
-      stat1Value = bestMonth.name !== 'N/A' ? bestMonth.name.substring(0, 3) : 'N/A';
+      stat1Value = formattedMonth;
       stat2Label = 'MONTHLY WIN RATE';
       stat2Value = bestMonth.rate !== -1 ? bestMonth.rate + '%' : 'N/A';
       
       footer1 = `<strong style="color: ${textMuted}; font-weight: 600;">ACTIVE MONTHS:</strong> <span style="font-weight: 600;">${activeMonths.length}</span>`;
       footer2 = `<strong style="color: ${textMuted}; font-weight: 600;">OVERALL WIN RATE:</strong> <span style="font-weight: 600;">${currentAnalysis.overall.winRate||0}%</span>`;
+      if (currentInsights && currentInsights.trends) insight = typeof currentInsights.trends === 'string' ? currentInsights.trends : (currentInsights.trends.text || 'Steady improvement is the goal.');
     }
     else if (path.includes('streaks')) {
       contextTitle = 'Winning Streaks';
@@ -834,7 +845,7 @@
       
       footer1 = `<strong style="color: ${textMuted}; font-weight: 600;">GAMES ANALYZED:</strong> <span style="font-weight: 600;">${currentAnalysis.overall.totalGames||0}</span>`;
       footer2 = '';
-      insight = 'Consistency is key for streaks';
+      insight = currentInsights && currentInsights.streaks && currentInsights.streaks.text ? currentInsights.streaks.text : 'Winning streaks build rating. Your longest streak was ' + bestWin + ' games. Keep focus to extend your runs.';
     }
     else if (path.includes('outcomes')) {
       contextTitle = 'Game Outcomes';
@@ -876,10 +887,14 @@
     }
     
     var card = document.createElement('div');
-    card.style.position = 'absolute';
+    card.style.position = 'fixed';
+    card.style.top = '0';
     card.style.left = '-9999px';
     card.style.width = '700px';
     card.style.height = '480px';
+    card.style.maxWidth = 'none';
+    card.style.maxHeight = 'none';
+    card.style.margin = '0';
     card.style.backgroundColor = bg;
     card.style.padding = '32px';
     card.style.fontFamily = 'Inter, sans-serif';
@@ -889,26 +904,11 @@
     card.style.flexDirection = 'column';
     card.style.justifyContent = 'space-between';
     card.style.borderRadius = '16px';
-    
-    card.innerHTML = `
-      <div style="flex: 1;">
-        <div style="font-size: 14px; font-weight: 600; color: ${primaryColor}; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">${contextTitle}</div>
-        <div style="font-size: 36px; font-weight: 700; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
-          <span>${un}</span>
-          <span style="font-size: 14px; font-weight: 600; color: ${isDark ? '#38bdf8' : '#0284c7'}; background: ${isDark ? 'rgba(56, 189, 248, 0.1)' : '#e0f2fe'}; padding: 6px 16px; border-radius: 20px; border: 1px solid ${isDark ? 'rgba(56, 189, 248, 0.2)' : '#bae6fd'};">Pro Player Profile</span>
-        </div>
-        
-        <div style="display: flex; gap: 16px; margin-bottom: 28px;">
-          <div style="background: ${cardBg}; padding: 16px 20px; border-radius: 8px; flex: 1; border: 1px solid ${isDark ? '#334155' : '#e2e8f0'}; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
-            <div style="font-size: 12px; color: ${textMuted}; font-weight: 600; margin-bottom: 4px;">${stat1Label}</div>
-            <div style="font-size: 26px; font-weight: 700;">${stat1Value}</div>
-          </div>
-          <div style="background: ${cardBg}; padding: 16px 20px; border-radius: 8px; flex: 1; border: 1px solid ${isDark ? '#334155' : '#e2e8f0'}; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
-            <div style="font-size: 12px; color: ${textMuted}; font-weight: 600; margin-bottom: 4px;">${stat2Label}</div>
-            <div style="font-size: 26px; font-weight: 700; color: ${primaryColor};">${stat2Value}</div>
-          </div>
-        </div>
-        
+
+    var isOverview = path === '/' || path.includes('index.html') || contextTitle === 'Chess Performance';
+    var highlightsHtml = '';
+    if (isOverview) {
+      highlightsHtml = `
         <div style="font-size: 11px; font-weight: 600; color: ${textMuted}; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">Career Highlights</div>
         <div style="display: flex; gap: 12px; margin-bottom: 12px;">
           <div style="background: ${isDark ? 'rgba(59, 130, 246, 0.1)' : '#eff6ff'}; padding: 16px 12px; border-radius: 8px; flex: 1; border: 1px solid ${isDark ? 'rgba(59, 130, 246, 0.2)' : '#bfdbfe'}; text-align: center;">
@@ -919,24 +919,58 @@
             <div style="font-size: 10px; color: ${textMuted}; font-weight: 700; margin-bottom: 6px; text-transform: uppercase;">Best Format</div>
             <div style="font-size: 20px; font-weight: 800; color: ${textPrimary};">${btc}</div>
           </div>
-          <div style="background: ${cardBg}; padding: 16px 12px; border-radius: 8px; flex: 1; border: 1px solid ${isDark ? '#334155' : '#e2e8f0'}; text-align: center; overflow: hidden;">
+          <div style="background: ${cardBg}; padding: 16px 12px; border-radius: 8px; flex: 1; border: 1px solid ${isDark ? '#334155' : '#e2e8f0'}; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
             <div style="font-size: 10px; color: ${textMuted}; font-weight: 700; margin-bottom: 6px; text-transform: uppercase;">Top Opening</div>
-            <div style="font-size: 18px; font-weight: 800; color: ${textPrimary}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${bop.length > 12 ? bop.substring(0, 12) + '...' : bop}</div>
+            <div style="font-size: 14px; font-weight: 800; color: ${textPrimary}; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.1;">${bop}</div>
           </div>
           <div style="background: ${cardBg}; padding: 16px 12px; border-radius: 8px; flex: 1; border: 1px solid ${isDark ? '#334155' : '#e2e8f0'}; text-align: center;">
             <div style="font-size: 10px; color: ${textMuted}; font-weight: 700; margin-bottom: 6px; text-transform: uppercase;">Best Streak</div>
             <div style="font-size: 20px; font-weight: 800; color: ${textPrimary};">${bestWin} <span style="font-size:12px; font-weight:600; color:${textMuted};">W</span></div>
           </div>
         </div>
+      `;
+    } else {
+      highlightsHtml = `
+        <div style="display: flex; gap: 24px; margin-bottom: 12px;">
+          <div style="flex: 1; font-size: 14px; color: ${textMuted};">
+            ${footer1}
+          </div>
+          <div style="flex: 1; font-size: 14px; color: ${textMuted};">
+            ${footer2}
+          </div>
+        </div>
+      `;
+    }
+
+    card.innerHTML = `
+      <div style="flex: 1;">
+        <div style="font-size: 14px; font-weight: 600; color: ${primaryColor}; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">${contextTitle}</div>
+        <div style="font-size: 36px; font-weight: 700; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+          <span>${un}</span>
+        </div>
+        
+        <div style="display: flex; gap: 16px; margin-bottom: 28px;">
+          <div style="background: ${cardBg}; padding: 16px 20px; border-radius: 8px; flex: 1; border: 1px solid ${isDark ? '#334155' : '#e2e8f0'}; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-size: 12px; color: ${textMuted}; font-weight: 600; margin-bottom: 4px;">${stat1Label}</div>
+            <div style="font-size: 26px; font-weight: 700; line-height: 1.1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal;">${stat1Value}</div>
+          </div>
+          <div style="background: ${cardBg}; padding: 16px 20px; border-radius: 8px; flex: 1; border: 1px solid ${isDark ? '#334155' : '#e2e8f0'}; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); display: flex; flex-direction: column; justify-content: center;">
+            <div style="font-size: 12px; color: ${textMuted}; font-weight: 600; margin-bottom: 4px;">${stat2Label}</div>
+            <div style="font-size: 26px; font-weight: 700; color: ${primaryColor}; line-height: 1.1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal;">${stat2Value}</div>
+          </div>
+        </div>
+        
+        ${highlightsHtml}
       </div>
       
       <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 12px; border-top: 1px solid ${isDark ? '#334155' : '#e2e8f0'}; padding-top: 16px;">
         <div style="flex: 1; padding-right: 20px;">
           <div style="font-size: 11px; font-weight: 600; color: ${primaryColor}; text-transform: uppercase; margin-bottom: 4px;">KEY INSIGHT</div>
-          <div style="font-size: 15px; font-weight: 500; line-height: 1.4;">${insight}</div>
+          <div style="font-size: 15px; font-weight: 500; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${insight}</div>
         </div>
-        <div style="font-size: 14px; color: ${textMuted}; font-weight: 700; text-align: right; min-width: 140px;">
-          Lichess Analytics
+        <div style="font-size: 14px; color: ${textMuted}; font-weight: 700; text-align: right; min-width: 180px; display: flex; flex-direction: column; align-items: flex-end;">
+          <span style="color: ${textPrimary}; margin-bottom: 4px;">lichess-performance-analytics.vercel.app</span>
+          <span style="font-size: 12px;">Player Insights</span>
         </div>
       </div>
     `;
@@ -946,7 +980,11 @@
     html2canvas(card, {
       scale: 2,
       backgroundColor: bg,
-      logging: false
+      logging: false,
+      width: 700,
+      height: 480,
+      windowWidth: 700,
+      windowHeight: 480
     }).then(function(canvas) {
       var link = document.createElement('a');
       link.download = 'lichess-' + contextTitle.toLowerCase().replace(/\s+/g, '-') + '-' + un.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.png';
